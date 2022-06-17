@@ -1,16 +1,38 @@
-# cabavenue
+<p align="center">
+    <img src="./assets/git/Git-readme-logo-passenger.png" alt="cabavenue passenger logo" />
+</p>
 
-A new Flutter project.
+<p>
+    Cabavenue is a taxi booking or cab service providing application based on the GPS data of smartphones of drivers and passengers.
+</p>
+<p>
+    The main idea is to provide people with fast and convinent cab serivces in times of needs.
+</p>
 
-## Getting Started
+<br />
+<h2>Get started</h2>
+<hr />
 
-This project is a starting point for a Flutter application.
+- Clone the project
+```
+    git clone https://github.com/GCES-Batch-2018-Minor-project-group/cabavenue
+```
 
-A few resources to get you started if this is your first Flutter project:
+- Change to dev
+```
+    git checkout dev
+```
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- Install packages
+```
+    flutter pub get
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Run the app
+```
+    flutter run main.dart
+```
+
+**OR**
+    
+    - In VScode open main.dart and press `f5` or `fn + f5`
