@@ -31,8 +31,7 @@ class CustomDrawer extends StatelessWidget {
             ),
             title: const Text('Edit Profile'),
             onTap: () {
-              Navigator.pop(context);
-              // Navigator.pushNamed(context, '/profile-edit');
+              Navigator.pushNamed(context, '/profile-edit');
             },
           ),
         ],

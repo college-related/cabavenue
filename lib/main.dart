@@ -1,4 +1,5 @@
 import 'package:cabavenue/pages/home.dart';
+import 'package:cabavenue/pages/profile_edit.dart';
 import 'package:cabavenue/pages/ride_history.dart';
 import 'package:flutter/material.dart';
 
@@ -20,7 +21,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => const MyHomePage(),
         '/ride-history': (context) => const RideHistory(),
-        // 'profile-edit': (context) => const EditProfile(),
+        '/profile-edit': (context) => const EditProfilePage(),
       },
       // home: const MyHomePage(),
     );
