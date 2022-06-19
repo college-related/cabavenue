@@ -1,3 +1,8 @@
+// ignore_for_file: prefer_const_constructors
+
+import 'package:cabavenue/widgets/floating_action_button.dart';
+import 'package:cabavenue/widgets/home/custom_chip.dart';
+import 'package:cabavenue/widgets/home/drawer.dart';
 import 'package:flutter/material.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -9,6 +14,21 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final GlobalKey<ScaffoldState> _key = GlobalKey();
+  late FocusNode myFocusNode;
+  bool _isSearching = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    myFocusNode = FocusNode();
+  }
+
+  @override
+  void dispose() {
+    myFocusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,35 +75,31 @@ class _MyHomePageState extends State<MyHomePage> {
             //   ],
             // ),
           ),
-          Positioned(
+          CustomFAB(
+            bgColor: Colors.redAccent,
+            icon: const Icon(Icons.campaign_outlined),
+            herotag: 'emergency-services',
             right: 10,
             top: MediaQuery.of(context).size.height * 0.08,
-            child: FloatingActionButton(
-              backgroundColor: Colors.redAccent,
-              onPressed: () {},
-              heroTag: 'emergency-services',
-              child: const Icon(Icons.campaign_outlined),
-            ),
+            onClick: () {},
           ),
-          Positioned(
+          CustomFAB(
+            bgColor: Colors.blueAccent,
+            icon: Icon(Icons.favorite_border_outlined),
+            herotag: 'saved-places',
             left: 10,
             bottom: MediaQuery.of(context).size.height * 0.45,
-            child: FloatingActionButton(
-              onPressed: () {},
-              heroTag: 'saved-places',
-              child: const Icon(Icons.favorite_border_outlined),
-            ),
+            onClick: () {},
           ),
-          Positioned(
+          CustomFAB(
+            bgColor: Colors.blueAccent,
+            icon: Icon(Icons.menu),
+            herotag: 'drawer',
             left: 10,
             bottom: MediaQuery.of(context).size.height * 0.35,
-            child: FloatingActionButton(
-              onPressed: () {
-                _key.currentState!.openDrawer();
-              },
-              heroTag: 'drawer',
-              child: const Icon(Icons.menu),
-            ),
+            onClick: () {
+              _key.currentState!.openDrawer();
+            },
           ),
           Positioned(
             left: 0,
@@ -151,8 +167,15 @@ class _MyHomePageState extends State<MyHomePage> {
                     'Select a destination',
                     style: Theme.of(context).textTheme.headline5,
                   ),
-                  const TextField(
-                    decoration: InputDecoration(
+                  TextField(
+                    readOnly: true,
+                    onTap: () {
+                      myFocusNode.requestFocus();
+                      setState(() {
+                        _isSearching = true;
+                      });
+                    },
+                    decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       labelText: 'Destination',
                     ),
@@ -161,85 +184,55 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class CustomChip extends StatelessWidget {
-  const CustomChip({
-    Key? key,
-    required this.label,
-    required this.icon,
-  }) : super(key: key);
-
-  final String label;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Chip(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        shape: const StadiumBorder(
-          side: BorderSide(
-            color: Colors.blueAccent,
-          ),
-        ),
-        avatar: Icon(
-          icon,
-          color: Colors.blueAccent,
-        ),
-        label: Text(
-          label,
-          style: const TextStyle(
-            color: Colors.blueAccent,
-          ),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 4.0,
-        shadowColor: Colors.blueAccent,
-      ),
-    );
-  }
-}
-
-class CustomDrawer extends StatelessWidget {
-  const CustomDrawer({Key? key, required this.customKey}) : super(key: key);
-  final GlobalKey customKey;
-
-  @override
-  Widget build(BuildContext context) {
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          const UserAccountsDrawerHeader(
-            decoration: BoxDecoration(color: Colors.blueAccent),
-            accountName: Text('Salipa Gurung'),
-            accountEmail: Text('salipagurung@gmail.com'),
-            currentAccountPicture: FlutterLogo(),
-          ),
-          ListTile(
-            leading: const Icon(
-              Icons.history,
+          Container(
+            width: double.infinity,
+            height: _isSearching ? MediaQuery.of(context).size.height : 0,
+            color: Colors.white,
+            padding: const EdgeInsets.only(
+              top: 35.0,
+              left: 10.0,
             ),
-            title: const Text('Ride history'),
-            onTap: () {
-              Navigator.pushNamed(context, '/ride-history');
-            },
-          ),
-          ListTile(
-            leading: const Icon(
-              Icons.edit_note_outlined,
+            child: Column(
+              // mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                IconButton(
+                  onPressed: () {
+                    FocusManager.instance.primaryFocus?.unfocus();
+                    setState(() {
+                      _isSearching = false;
+                    });
+                  },
+                  icon: const Icon(Icons.arrow_back_ios),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(
+                    top: 20.0,
+                    left: 20.0,
+                    right: 20.0,
+                    bottom: 5.0,
+                  ),
+                  child: TextFormField(
+                    initialValue: 'Your current location',
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Pick up location',
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: TextField(
+                    focusNode: myFocusNode,
+                    autofocus: _isSearching ? true : false,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Destination',
+                    ),
+                  ),
+                ),
+              ],
             ),
-            title: const Text('Edit Profile'),
-            onTap: () {
-              Navigator.pop(context);
-              // Navigator.pushNamed(context, '/profile-edit');
-            },
           ),
         ],
       ),
