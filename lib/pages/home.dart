@@ -81,7 +81,9 @@ class _MyHomePageState extends State<MyHomePage> {
             herotag: 'emergency-services',
             right: 10,
             top: MediaQuery.of(context).size.height * 0.08,
-            onClick: () {},
+            onClick: () {
+              Navigator.pushNamed(context, '/emergency');
+            },
           ),
           CustomFAB(
             bgColor: Colors.blueAccent,
