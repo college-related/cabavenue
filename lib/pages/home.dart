@@ -1,9 +1,13 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, depend_on_referenced_packages
 
 import 'package:cabavenue/widgets/floating_action_button.dart';
 import 'package:cabavenue/widgets/home/custom_chip.dart';
 import 'package:cabavenue/widgets/home/drawer.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:vector_map_tiles/vector_map_tiles.dart';
+import 'package:vector_tile_renderer/vector_tile_renderer.dart' as vector_theme;
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key}) : super(key: key);
@@ -30,6 +34,24 @@ class _MyHomePageState extends State<MyHomePage> {
     super.dispose();
   }
 
+  VectorTileProvider _cachingTileProvider(String urlTemplate) {
+    return MemoryCacheVectorTileProvider(
+      delegate: NetworkVectorTileProvider(
+        urlTemplate: urlTemplate,
+        maximumZoom: 14,
+      ),
+      maxSizeBytes: 1024 * 1024 * 2,
+    );
+  }
+
+  _mapTheme(BuildContext context) {
+    return vector_theme.ProvidedThemes.lightTheme();
+  }
+
+  String _urlTemplate() {
+    return 'https://tiles.stadiamaps.com/data/openmaptiles/{z}/{x}/{y}.pbf?api_key=ed923bf6-7a17-4cec-aada-832cdb4050e7';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -44,36 +66,30 @@ class _MyHomePageState extends State<MyHomePage> {
             width: MediaQuery.of(context).size.width,
             height: MediaQuery.of(context).size.height,
             color: Colors.grey,
-            // child:
-            // FlutterMap(
-            //   options: MapOptions(
-            //     zoom: 18,
-            //     center: LatLng(28.2624061, 83.9687894),
-            //     plugins: [VectorMapTilesPlugin()],
-            //   ),
-            //   layers: [
-            //     VectorTileLayerOptions(
-            //         theme: _mapTheme(context),
-            //         tileProviders: TileProviders({
-            //           'openmaptiles': _cachingTileProvider(_urlTemplate())
-            //         })),
-            //     // TileLayerOptions(
-            //     //   urlTemplate:
-            //     //       "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-            //     //   subdomains: ['a', 'b', 'c'],
-            //     // ),
-            //     new MarkerLayerOptions(
-            //       markers: [
-            //         new Marker(
-            //           width: 20.0,
-            //           height: 20.0,
-            //           point: new LatLng(28.2624061, 83.9687894),
-            //           builder: (ctx) => const FlutterLogo(),
-            //         ),
-            //       ],
-            //     ),
-            //   ],
-            // ),
+            child: FlutterMap(
+              options: MapOptions(
+                zoom: 18,
+                center: LatLng(28.2624061, 83.9687894),
+                plugins: [VectorMapTilesPlugin()],
+              ),
+              layers: [
+                VectorTileLayerOptions(
+                    theme: _mapTheme(context),
+                    tileProviders: TileProviders({
+                      'openmaptiles': _cachingTileProvider(_urlTemplate())
+                    })),
+                MarkerLayerOptions(
+                  markers: [
+                    Marker(
+                      width: 20.0,
+                      height: 20.0,
+                      point: LatLng(28.2624061, 83.9687894),
+                      builder: (ctx) => const FlutterLogo(),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
           CustomFAB(
             bgColor: Colors.redAccent,
@@ -81,7 +97,9 @@ class _MyHomePageState extends State<MyHomePage> {
             herotag: 'emergency-services',
             right: 10,
             top: MediaQuery.of(context).size.height * 0.08,
-            onClick: () {},
+            onClick: () {
+              Navigator.pushNamed(context, '/emergency');
+            },
           ),
           CustomFAB(
             bgColor: Colors.blueAccent,
