@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const RideHistory());
-}
-
 class RideHistory extends StatelessWidget {
   const RideHistory({Key? key}) : super(key: key);
 
