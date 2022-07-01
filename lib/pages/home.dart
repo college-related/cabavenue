@@ -107,7 +107,9 @@ class _MyHomePageState extends State<MyHomePage> {
             herotag: 'saved-places',
             left: 10,
             bottom: MediaQuery.of(context).size.height * 0.45,
-            onClick: () {},
+            onClick: () {
+              Navigator.of(context).pushNamed('/auth');
+            },
           ),
           CustomFAB(
             bgColor: Colors.blueAccent,
