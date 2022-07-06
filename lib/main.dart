@@ -1,3 +1,4 @@
+import 'package:cabavenue/pages/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:cabavenue/pages/home.dart';
 import 'package:cabavenue/pages/auth.dart';
@@ -23,7 +24,8 @@ class MyApp extends StatelessWidget {
       ),
       debugShowCheckedModeBanner: false,
       routes: {
-        '/': (context) => const MyHomePage(),
+        '/': (context) => const SplashScreen(),
+        '/home': (context) => const HomePage(),
         '/ride-history': (context) => const RideHistory(),
         '/profile-edit': (context) => const EditProfilePage(),
         '/emergency': (context) => const EmergencyPage(),
