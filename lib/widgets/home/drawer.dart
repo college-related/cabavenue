@@ -1,3 +1,4 @@
+import 'package:cabavenue/services/auth/auth_service.dart';
 import 'package:flutter/material.dart';
 
 class CustomDrawer extends StatelessWidget {
@@ -32,6 +33,16 @@ class CustomDrawer extends StatelessWidget {
             title: const Text('Edit Profile'),
             onTap: () {
               Navigator.pushNamed(context, '/profile-edit');
+            },
+          ),
+          ListTile(
+            leading: const Icon(
+              Icons.logout_rounded,
+            ),
+            title: const Text('Logout'),
+            onTap: () {
+              AuthService().logout();
+              Navigator.pushNamed(context, '/auth');
             },
           ),
         ],

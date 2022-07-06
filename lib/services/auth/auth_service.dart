@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:cabavenue/helpers/error_handler.dart';
 import 'package:cabavenue/helpers/snackbar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -27,6 +28,7 @@ class AuthService {
         'password': password,
       };
 
+      print(url);
       http.Response res = await http.post(
         Uri.parse('http://$url/v1/auth/register'),
         body: jsonEncode(toSendUser),
@@ -39,7 +41,10 @@ class AuthService {
         response: res,
         context: context,
         onSuccess: () {
-          Navigator.of(context).pushNamed('/');
+          const FlutterSecureStorage().write(
+              key: "CABAVENUE_USERDATA_PASSENGER",
+              value: jsonDecode(res.body).toString());
+          Navigator.of(context).pushNamed('/home');
         },
       );
     } catch (e) {
@@ -70,11 +75,18 @@ class AuthService {
         response: res,
         context: context,
         onSuccess: () {
-          Navigator.of(context).pushNamed('/');
+          const FlutterSecureStorage().write(
+              key: "CABAVENUE_USERDATA_PASSENGER",
+              value: jsonDecode(res.body).toString());
+          Navigator.of(context).pushNamed('/home');
         },
       );
     } catch (e) {
       showSnackBar(context, e.toString(), true);
     }
+  }
+
+  void logout() async {
+    const FlutterSecureStorage().delete(key: "CABAVENUE_USERDATA_PASSENGER");
   }
 }
