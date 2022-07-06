@@ -9,14 +9,14 @@ import 'package:latlong2/latlong.dart';
 import 'package:vector_map_tiles/vector_map_tiles.dart';
 import 'package:vector_tile_renderer/vector_tile_renderer.dart' as vector_theme;
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key}) : super(key: key);
+class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _HomePageState extends State<HomePage> {
   final GlobalKey<ScaffoldState> _key = GlobalKey();
   late FocusNode myFocusNode;
   bool _isSearching = false;
@@ -107,9 +107,7 @@ class _MyHomePageState extends State<MyHomePage> {
             herotag: 'saved-places',
             left: 10,
             bottom: MediaQuery.of(context).size.height * 0.45,
-            onClick: () {
-              Navigator.of(context).pushNamed('/auth');
-            },
+            onClick: () {},
           ),
           CustomFAB(
             bgColor: Colors.blueAccent,
