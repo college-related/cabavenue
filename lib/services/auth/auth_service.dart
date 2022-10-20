@@ -2,11 +2,15 @@ import 'dart:convert';
 
 import 'package:cabavenue/helpers/error_handler.dart';
 import 'package:cabavenue/helpers/snackbar.dart';
+import 'package:cabavenue/models/user_model.dart';
+import 'package:cabavenue/providers/profile_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:provider/provider.dart';
 
 class AuthService {
   String? url = dotenv.env['BACKEND_URL_WITH_PORT'];
@@ -28,7 +32,6 @@ class AuthService {
         'password': password,
       };
 
-      print(url);
       http.Response res = await http.post(
         Uri.parse('http://$url/v1/auth/register'),
         body: jsonEncode(toSendUser),
@@ -41,10 +44,30 @@ class AuthService {
         response: res,
         context: context,
         onSuccess: () {
+          UserModel user = UserModel(
+            name: jsonDecode(res.body)["user"]["name"],
+            isEmailVerified: jsonDecode(res.body)["user"]["isEmailVerified"],
+            isPhoneVerified: jsonDecode(res.body)["user"]["isPhoneVerified"],
+            email: jsonDecode(res.body)["user"]["email"],
+            phone: jsonDecode(res.body)["user"]["phone"],
+            address: jsonDecode(res.body)["user"]["address"],
+            accessToken: jsonDecode(res.body)["tokens"]["access"]["token"],
+            id: jsonDecode(res.body)["user"]["id"],
+            profileUrl: jsonDecode(res.body)["user"]["profileUrl"],
+            rideHistory: jsonDecode(res.body)["user"]["rideHistory"],
+          );
           const FlutterSecureStorage().write(
-              key: "CABAVENUE_USERDATA_PASSENGER",
-              value: jsonDecode(res.body).toString());
-          Navigator.of(context).pushNamed('/home');
+            key: "CABAVENUE_USERDATA_PASSENGER",
+            value: UserModel.serialize(user),
+          );
+          Fluttertoast.showToast(
+            msg: 'Registered successfully',
+            backgroundColor: Colors.green[300],
+          );
+          Provider.of<ProfileProvider>(context, listen: false)
+              .setUserData(user);
+          Navigator.of(context)
+              .pushNamedAndRemoveUntil('/home', (route) => false);
         },
       );
     } catch (e) {
@@ -75,10 +98,30 @@ class AuthService {
         response: res,
         context: context,
         onSuccess: () {
+          UserModel user = UserModel(
+            name: jsonDecode(res.body)["user"]["name"],
+            isEmailVerified: jsonDecode(res.body)["user"]["isEmailVerified"],
+            isPhoneVerified: jsonDecode(res.body)["user"]["isPhoneVerified"],
+            email: jsonDecode(res.body)["user"]["email"],
+            phone: jsonDecode(res.body)["user"]["phone"],
+            address: jsonDecode(res.body)["user"]["address"],
+            accessToken: jsonDecode(res.body)["tokens"]["access"]["token"],
+            id: jsonDecode(res.body)["user"]["id"],
+            profileUrl: jsonDecode(res.body)["user"]["profileUrl"],
+            rideHistory: jsonDecode(res.body)["user"]["rideHistory"],
+          );
           const FlutterSecureStorage().write(
-              key: "CABAVENUE_USERDATA_PASSENGER",
-              value: jsonDecode(res.body).toString());
-          Navigator.of(context).pushNamed('/home');
+            key: "CABAVENUE_USERDATA_PASSENGER",
+            value: UserModel.serialize(user),
+          );
+          Fluttertoast.showToast(
+            msg: 'Logged in successfully',
+            backgroundColor: Colors.green[300],
+          );
+          Provider.of<ProfileProvider>(context, listen: false)
+              .setUserData(user);
+          Navigator.of(context)
+              .pushNamedAndRemoveUntil('/home', (route) => false);
         },
       );
     } catch (e) {
@@ -86,7 +129,12 @@ class AuthService {
     }
   }
 
-  void logout() async {
-    const FlutterSecureStorage().delete(key: "CABAVENUE_USERDATA_PASSENGER");
+  void logout(context) async {
+    const FlutterSecureStorage().delete(key: "CABAVENUE_USERDATA");
+    Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+    Fluttertoast.showToast(
+      msg: 'Logged out',
+      backgroundColor: Colors.green[600],
+    );
   }
 }
