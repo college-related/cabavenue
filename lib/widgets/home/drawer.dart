@@ -41,7 +41,7 @@ class CustomDrawer extends StatelessWidget {
             ),
             title: const Text('Logout'),
             onTap: () {
-              AuthService().logout();
+              AuthService().logout(context);
               Navigator.pushNamed(context, '/auth');
             },
           ),
