@@ -1,4 +1,11 @@
+import 'package:cabavenue/providers/profile_provider.dart';
+import 'package:cabavenue/services/report_service.dart';
+import 'package:cabavenue/widgets/custom_text_field.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:iconsax/iconsax.dart';
+import 'package:moment_dart/moment_dart.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(const RideHistory());
@@ -25,359 +32,195 @@ class _MyRidePageState extends State<MyRidePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
         title: Text(widget.title),
+        elevation: 2,
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(10),
-        children: [
-          Card(
-              elevation: 1,
-              shadowColor: Colors.black,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+      body: Consumer<ProfileProvider>(
+        builder: (context, profile, child) {
+          var history = profile.getUserData.rideHistory;
+
+          return ListView.builder(
+            itemCount: history!.length,
+            padding: const EdgeInsets.all(10),
+            itemBuilder: (context, index) {
+              return Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: const BorderRadius.all(
+                    Radius.circular(5.0),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2),
+                      spreadRadius: 5,
+                      blurRadius: 7,
+                      offset: const Offset(0, 3), // changes position of shadow
+                    ),
+                  ],
+                ),
+                margin: const EdgeInsets.symmetric(
+                    horizontal: 10.0, vertical: 20.0),
+                padding: const EdgeInsets.all(10.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const CircleAvatar(
-                      backgroundImage: NetworkImage(
-                          "https://images.unsplash.com/photo-1547721064-da6cfb341d50"),
-                    ),
                     Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        const Text('Gopal Prasad Shrestha',
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.w500)),
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Column(children: const [
-                              Icon(
-                                Icons.location_on_outlined,
-                                color: Colors.blue,
-                              ),
-                              Icon(Icons.share_location_rounded,
-                                  color: Colors.blue),
-                            ]),
+                            const Padding(
+                              padding: EdgeInsets.only(right: 6.0),
+                              child: Icon(Iconsax.location, size: 20.0),
+                            ),
                             Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: const [
-                                  Text(
-                                    'Bagar',
-                                  ),
-                                  Text(
-                                    'Chipledhunga',
-                                    textAlign: TextAlign.left,
-                                  ),
-                                ]),
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Pickup point',
+                                  style: Theme.of(context).textTheme.subtitle1,
+                                ),
+                                Text(history[index]['source']),
+                              ],
+                            )
                           ],
                         ),
-                        const Text(
-                          'Distance travelled: 4.5km',
-                          style: TextStyle(
-                              fontSize: 14,
-                              color: Color.fromARGB(255, 127, 127, 127)),
+                        const SizedBox(
+                          height: 20.0,
                         ),
-                        const Text(
-                          'Date: 19/06/2022',
-                          style: TextStyle(
-                              fontSize: 14,
-                              color: Color.fromARGB(255, 127, 127, 127)),
-                        ),
-                        const Text(
-                          'Time: 2pm',
-                          style: TextStyle(
-                              fontSize: 14,
-                              color: Color.fromARGB(255, 127, 127, 127)),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.only(right: 6.0),
+                              child: Icon(Iconsax.location, size: 20.0),
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Destination',
+                                  style: Theme.of(context).textTheme.subtitle1,
+                                ),
+                                Text(history[index]['destination']),
+                              ],
+                            )
+                          ],
                         ),
                       ],
                     ),
-                    const Text(
-                      '\$200',
-                      style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 20,
-                          color: Color.fromARGB(255, 244, 129, 36)),
-                    )
-                  ],
-                ),
-              )),
-          Card(
-              elevation: 1,
-              shadowColor: Colors.black,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const CircleAvatar(
-                      backgroundImage: NetworkImage(
-                          "https://images.unsplash.com/photo-1547721064-da6cfb341d50"),
-                    ),
                     Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Gopal Prasad Shrestha',
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.w500)),
+                        Text(
+                          Moment(DateTime.parse(history[index]['createdAt']))
+                              .fromNow(form: UnitStringForm.short),
+                        ),
+                        Text(
+                          "Rs. ${history[index]['price']}",
+                          style: Theme.of(context).textTheme.headline2,
+                        ),
                         Row(
                           children: [
-                            Column(children: const [
-                              Icon(
-                                Icons.location_on_outlined,
-                                color: Colors.blue,
+                            OutlinedButton(
+                              onPressed: () {
+                                showAlertDialog(
+                                  context,
+                                  history[index]['driver']['id'],
+                                  history[index]['driver']['name'],
+                                );
+                              },
+                              child: const Text(
+                                'Report',
+                                style: TextStyle(
+                                  color: Colors.red,
+                                ),
                               ),
-                              Icon(Icons.share_location_rounded,
-                                  color: Colors.blue),
-                            ]),
-                            Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: const [
-                                  Text(
-                                    'Naya Gaon, Pokhara',
-                                  ),
-                                  Text(
-                                    'Lamachaur, Pokhara',
-                                    textAlign: TextAlign.left,
-                                  ),
-                                ]),
+                            ),
                           ],
-                        ),
-                        const Text(
-                          'Distance travelled: 4.5km',
-                          style: TextStyle(
-                              fontSize: 14,
-                              color: Color.fromARGB(255, 127, 127, 127)),
-                        ),
-                        const Text(
-                          'Date: 19/06/2022',
-                          style: TextStyle(
-                              fontSize: 14,
-                              color: Color.fromARGB(255, 127, 127, 127)),
-                        ),
-                        const Text(
-                          'Time: 2pm',
-                          style: TextStyle(
-                              fontSize: 14,
-                              color: Color.fromARGB(255, 127, 127, 127)),
-                        ),
+                        )
                       ],
                     ),
-                    const Text(
-                      '\$350',
-                      style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 20,
-                          color: Color.fromARGB(255, 244, 129, 36)),
-                    )
                   ],
                 ),
-              )),
-          Card(
-              elevation: 1,
-              shadowColor: Colors.black,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const CircleAvatar(
-                      backgroundImage: NetworkImage(
-                          "https://images.unsplash.com/photo-1547721064-da6cfb341d50"),
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Gopal Prasad Shrestha',
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.w500)),
-                        Row(
-                          children: [
-                            Column(children: const [
-                              Icon(
-                                Icons.location_on_outlined,
-                                color: Colors.blue,
-                              ),
-                              Icon(Icons.share_location_rounded,
-                                  color: Colors.blue),
-                            ]),
-                            Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: const [
-                                  Text(
-                                    'Naya Gaon, Pokhara',
-                                  ),
-                                  Text(
-                                    'Lamachaur, Pokhara',
-                                    textAlign: TextAlign.left,
-                                  ),
-                                ]),
-                          ],
-                        ),
-                        const Text(
-                          'Distance travelled: 4.5km',
-                          style: TextStyle(
-                              fontSize: 14,
-                              color: Color.fromARGB(255, 127, 127, 127)),
-                        ),
-                        const Text(
-                          'Date: 19/06/2022',
-                          style: TextStyle(
-                              fontSize: 14,
-                              color: Color.fromARGB(255, 127, 127, 127)),
-                        ),
-                        const Text(
-                          'Time: 2pm',
-                          style: TextStyle(
-                              fontSize: 14,
-                              color: Color.fromARGB(255, 127, 127, 127)),
-                        ),
-                      ],
-                    ),
-                    const Text(
-                      '\$250',
-                      style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 20,
-                          color: Color.fromARGB(255, 244, 129, 36)),
-                    )
-                  ],
-                ),
-              )),
-          Card(
-              elevation: 1,
-              shadowColor: Colors.black,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const CircleAvatar(
-                      backgroundImage: NetworkImage(
-                          "https://images.unsplash.com/photo-1547721064-da6cfb341d50"),
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Gopal Prasad Shrestha',
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.w500)),
-                        Row(
-                          children: [
-                            Column(children: const [
-                              Icon(
-                                Icons.location_on_outlined,
-                                color: Colors.blue,
-                              ),
-                              Icon(Icons.share_location_rounded,
-                                  color: Colors.blue),
-                            ]),
-                            Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: const [
-                                  Text(
-                                    'Bagar',
-                                  ),
-                                  Text(
-                                    'Chipledhunga',
-                                    textAlign: TextAlign.left,
-                                  ),
-                                ]),
-                          ],
-                        ),
-                        const Text(
-                          'Distance travelled: 4.5km',
-                          style: TextStyle(
-                              fontSize: 14,
-                              color: Color.fromARGB(255, 127, 127, 127)),
-                        ),
-                        const Text(
-                          'Date: 19/06/2022',
-                          style: TextStyle(
-                              fontSize: 14,
-                              color: Color.fromARGB(255, 127, 127, 127)),
-                        ),
-                        const Text(
-                          'Time: 2pm',
-                          style: TextStyle(
-                              fontSize: 14,
-                              color: Color.fromARGB(255, 127, 127, 127)),
-                        ),
-                      ],
-                    ),
-                    const Text(
-                      '\$300',
-                      style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 20,
-                          color: Color.fromARGB(255, 244, 129, 36)),
-                    )
-                  ],
-                ),
-              )),
-          const Card(
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundImage: NetworkImage(
-                    "https://images.unsplash.com/photo-1547721064-da6cfb341d50"),
-              ),
-              title: Text('Bagar to Chipledhunga'),
-              subtitle: Text('Driver: Harry Smith'),
-              trailing: Text(r''),
-              contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 20),
-            ),
-          ),
-          const Card(
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundImage: NetworkImage(
-                    "https://images.unsplash.com/photo-1547721064-da6cfb341d50"),
-              ),
-              title: Text('Bagar to Chipledhunga'),
-              subtitle: Text('Driver: Harry Smith'),
-              trailing: Text(r''),
-              contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 20),
-            ),
-          ),
-        ],
+              );
+            },
+          );
+        },
       ),
     );
   }
+}
+
+// show alert dialouge for confirmation of request rides
+showAlertDialog(BuildContext context, id, name) {
+  TextEditingController report = TextEditingController();
+  final reportForm = GlobalKey<FormState>();
+
+  Widget yesButton = ElevatedButton(
+    onPressed: () {
+      if (reportForm.currentState!.validate()) {
+        ReportService().report(context, name, id, report.text);
+        Navigator.of(context).pop();
+        Future.delayed(
+          const Duration(seconds: 2),
+          () => Fluttertoast.showToast(
+            msg: 'Reported successfully',
+            backgroundColor: Colors.green[500],
+          ),
+        );
+      }
+    },
+    style: ButtonStyle(
+      backgroundColor: MaterialStateProperty.all<Color>(Colors.teal),
+      foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+    ),
+    child: const Text("Report"),
+  );
+
+//  Create cancel button
+  Widget cancelButton = ElevatedButton(
+    style: ButtonStyle(
+      backgroundColor: MaterialStateProperty.all<Color>(Colors.redAccent),
+      foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+    ),
+    onPressed: () {
+      Navigator.of(context).pop();
+    },
+    child: const Text("Cancel"),
+  );
+
+  // Create AlertDialog
+  AlertDialog alert = AlertDialog(
+    title: const Text("Report the passenger?"),
+    content: SizedBox(
+      width: MediaQuery.of(context).size.width * 0.8,
+      height: MediaQuery.of(context).size.height * 0.2,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Form(
+          key: reportForm,
+          child: CustomTextField(
+            controller: report,
+            hintText: 'Report description',
+            icon: Iconsax.activity,
+          ),
+        ),
+      ),
+    ),
+    actions: [
+      cancelButton,
+      yesButton,
+    ],
+  );
+
+  // show the dialog
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return alert;
+    },
+  );
 }
