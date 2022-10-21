@@ -289,6 +289,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.0"
+  moment_dart:
+    dependency: "direct main"
+    description:
+      name: moment_dart
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.10.3"
   nested:
     dependency: transitive
     description:
