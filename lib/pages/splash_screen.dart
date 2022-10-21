@@ -15,9 +15,15 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
     _checkUserAuth().then((value) => {
           if (value != null)
-            {Navigator.of(context).pushNamed('/home')}
+            {
+              Navigator.of(context)
+                  .pushNamedAndRemoveUntil('/home', (route) => false)
+            }
           else
-            {Navigator.of(context).pushNamed('/auth')}
+            {
+              Navigator.of(context)
+                  .pushNamedAndRemoveUntil('/auth', (route) => false)
+            }
         });
   }
 

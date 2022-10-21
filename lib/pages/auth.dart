@@ -12,7 +12,7 @@ class AuthPage extends StatefulWidget {
 }
 
 class _AuthPageState extends State<AuthPage> {
-  bool isSignup = true;
+  bool isSignup = false;
   callback() {
     setState(() {
       isSignup = !isSignup;
@@ -21,9 +21,15 @@ class _AuthPageState extends State<AuthPage> {
 
   @override
   Widget build(BuildContext context) {
-    return isSignup
-        ? SignupScreen(callback: callback)
-        : LoginScreen(callback: callback);
+    return Scaffold(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: isSignup
+              ? SignupScreen(callback: callback)
+              : LoginScreen(callback: callback),
+        ),
+      ),
+    );
   }
 }
 
@@ -73,105 +79,98 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        backgroundColor: Colors.white,
-        body: SafeArea(
-          child: SingleChildScrollView(
-            child: Form(
-              key: _signupFormKey,
-              child: Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Column(
-                    children: <Widget>[
-                      const Text(
-                        'Cabavenue',
-                        style: TextStyle(
-                            fontSize: 35, fontWeight: FontWeight.w500),
-                      ),
-                      const Text('Start of a new journey'),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Image(image: AssetImage("assets/images/logo.jpg")),
-                        ],
-                      ),
-                      CustomTextField(
-                        controller: _phoneController,
-                        hintText: 'Phone number',
-                        icon: Iconsax.call,
-                        keyboardType: TextInputType.number,
-                        validations: const ['specific-length'],
-                        length: 10,
-                      ),
-                      CustomTextField(
-                        controller: _nameController,
-                        hintText: 'Full Name',
-                        icon: Iconsax.user,
-                      ),
-                      CustomTextField(
-                        controller: _emailController,
-                        hintText: 'Email',
-                        icon: Iconsax.sms,
-                        keyboardType: TextInputType.emailAddress,
-                        validations: const ['email'],
-                      ),
-                      CustomTextField(
-                        controller: _addressController,
-                        hintText: 'Address',
-                        icon: Iconsax.location,
-                        keyboardType: TextInputType.streetAddress,
-                      ),
-                      CustomTextField(
-                        controller: _passwordController,
-                        hintText: 'Password',
-                        icon: Iconsax.lock_1,
-                        isSecuredText: true,
-                        validations: const ['length', 'secure'],
-                      ),
-                      CustomTextField(
-                        controller: _confirmPasswordController,
-                        hintText: 'Confirm Password',
-                        icon: Iconsax.lock,
-                        isSecuredText: true,
-                        validations: const ['length', 'secure'],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            primary: Colors.teal,
-                            shape: const RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(8)),
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 12,
-                              horizontal: 50.0,
-                            ),
-                          ),
-                          onPressed: () {
-                            if (_signupFormKey.currentState!.validate()) {
-                              signUpUser();
-                            }
-                          },
-                          child: const Text("SignUp"),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {},
-                        child: const Text('Forget Password'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          widget.callback();
-                        },
-                        child: const Text('Already have an account? LogIn'),
-                      ),
-                    ],
-                  )),
+    return Form(
+      key: _signupFormKey,
+      child: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Column(
+          children: <Widget>[
+            const Text(
+              'Cabavenue',
+              style: TextStyle(fontSize: 35, fontWeight: FontWeight.w500),
             ),
-          ),
-        ));
+            const Text('Start of a new journey'),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Image(image: AssetImage("assets/images/logo.jpg")),
+              ],
+            ),
+            CustomTextField(
+              controller: _phoneController,
+              hintText: 'Phone number',
+              icon: Iconsax.call,
+              keyboardType: TextInputType.number,
+              validations: const ['specific-length'],
+              length: 10,
+            ),
+            CustomTextField(
+              controller: _nameController,
+              hintText: 'Full Name',
+              icon: Iconsax.user,
+            ),
+            CustomTextField(
+              controller: _emailController,
+              hintText: 'Email',
+              icon: Iconsax.sms,
+              keyboardType: TextInputType.emailAddress,
+              validations: const ['email'],
+            ),
+            CustomTextField(
+              controller: _addressController,
+              hintText: 'Address',
+              icon: Iconsax.location,
+              keyboardType: TextInputType.streetAddress,
+            ),
+            CustomTextField(
+              controller: _passwordController,
+              hintText: 'Password',
+              icon: Iconsax.lock_1,
+              isSecuredText: true,
+              validations: const ['length', 'secure'],
+            ),
+            CustomTextField(
+              controller: _confirmPasswordController,
+              hintText: 'Confirm Password',
+              icon: Iconsax.lock,
+              isSecuredText: true,
+              validations: const ['length', 'secure'],
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.teal,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(8)),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 50.0,
+                  ),
+                ),
+                onPressed: () {
+                  if (_signupFormKey.currentState!.validate()) {
+                    signUpUser();
+                  }
+                },
+                child: const Text("SignUp"),
+              ),
+            ),
+            TextButton(
+              onPressed: () {},
+              child: const Text('Forget Password'),
+            ),
+            TextButton(
+              onPressed: () {
+                widget.callback();
+              },
+              child: const Text('Already have an account? LogIn'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -207,84 +206,77 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        backgroundColor: Colors.white,
-        body: SafeArea(
-          child: Form(
-            key: _loginFormKey,
-            child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 30, horizontal: 10),
-                child: Column(
-                  children: <Widget>[
-                    const Text(
-                      'Cabavenue',
-                      style:
-                          TextStyle(fontSize: 35, fontWeight: FontWeight.w500),
-                    ),
-                    const Text('Welcome back'),
-                    Container(
-                      alignment: Alignment.center,
-                      padding: const EdgeInsets.all(10),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Image(image: AssetImage("assets/images/logo.jpg")),
-                        ],
-                      ),
-                    ),
-                    CustomTextField(
-                      controller: _phoneController,
-                      hintText: 'Phone Number',
-                      icon: Iconsax.call,
-                      keyboardType: TextInputType.number,
-                    ),
-                    CustomTextField(
-                      controller: _passwordController,
-                      hintText: 'Password',
-                      icon: Iconsax.password_check,
-                      isSecuredText: true,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          primary: Colors.teal,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(8)),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 12,
-                            horizontal: 80.0,
-                          ),
-                        ),
-                        onPressed: () {
-                          if (_loginFormKey.currentState!.validate()) {
-                            loginUser();
-                          }
-                        },
-                        child: const Text(
-                          "Login",
-                          style: TextStyle(
-                              fontSize: 14,
-                              letterSpacing: 2.2,
-                              color: Colors.white),
-                        ),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {},
-                      child: const Text('Forgot Password?'),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        widget.callback();
-                      },
-                      child: const Text('Does not have account? SignUp'),
-                    ),
-                  ],
-                )),
-          ),
-        ));
+    return Form(
+      key: _loginFormKey,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 10),
+        child: Column(
+          children: <Widget>[
+            const Text(
+              'Cabavenue',
+              style: TextStyle(fontSize: 35, fontWeight: FontWeight.w500),
+            ),
+            const Text('Welcome back'),
+            Container(
+              alignment: Alignment.center,
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Image(image: AssetImage("assets/images/logo.jpg")),
+                ],
+              ),
+            ),
+            CustomTextField(
+              controller: _phoneController,
+              hintText: 'Phone Number',
+              icon: Iconsax.call,
+              keyboardType: TextInputType.number,
+            ),
+            CustomTextField(
+              controller: _passwordController,
+              hintText: 'Password',
+              icon: Iconsax.password_check,
+              isSecuredText: true,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.teal,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(8)),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 80.0,
+                  ),
+                ),
+                onPressed: () {
+                  if (_loginFormKey.currentState!.validate()) {
+                    loginUser();
+                  }
+                },
+                child: const Text(
+                  "Login",
+                  style: TextStyle(
+                      fontSize: 14, letterSpacing: 2.2, color: Colors.white),
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {},
+              child: const Text('Forgot Password?'),
+            ),
+            TextButton(
+              onPressed: () {
+                widget.callback();
+              },
+              child: const Text('Does not have account? SignUp'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
