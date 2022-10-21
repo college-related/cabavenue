@@ -33,6 +33,8 @@ dependencies:
   fluttertoast: ^8.1.1
   provider: ^6.0.4
   moment_dart: ^0.10.3
+  image_picker: ^0.8.6
+  cloudinary_sdk: ^4.0.2+10
 
 dev_dependencies:
   flutter_test:
