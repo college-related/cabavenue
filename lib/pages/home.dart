@@ -1,8 +1,12 @@
 // ignore_for_file: prefer_const_constructors, depend_on_referenced_packages
 import 'package:cabavenue/models/user_model.dart';
 import 'package:cabavenue/providers/profile_provider.dart';
+import 'package:cabavenue/widgets/accepted_container.dart';
 import 'package:cabavenue/widgets/floating_action_button.dart';
 import 'package:cabavenue/widgets/home/drawer.dart';
+import 'package:cabavenue/widgets/place_search_field.dart';
+import 'package:cabavenue/widgets/requesting_container.dart';
+import 'package:cabavenue/widgets/rides_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -23,9 +27,13 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final GlobalKey<ScaffoldState> _key = GlobalKey();
+  final _rideRequestFormKey = GlobalKey<FormState>();
   late FocusNode myFocusNode;
   double initialDestinationContainerPosition = 540.0;
-  bool _isSearching = false;
+  bool _isSearching = false,
+      _isDestinationSet = false,
+      _isRequesting = false,
+      _isAccepted = false;
   DateTime? currentBackPressTime;
 
   final MapController _mapController = MapController();
@@ -72,12 +80,10 @@ class _HomePageState extends State<HomePage> {
     super.initState();
 
     myFocusNode = FocusNode();
-    setState(() {
-      getProfileData();
-    });
+    getProfileData();
     _sourceController.text = 'Current location';
 
-    getCurrentLocation();
+    // getCurrentLocation();
   }
 
   @override
@@ -101,8 +107,36 @@ class _HomePageState extends State<HomePage> {
   }
 
   String _urlTemplate() {
-    return 'https://api.maptiler.com/tiles/v3-4326/tiles.json?key=x0zt2WeTRQEvX2oFs7PX';
-    // return 'https://tiles.stadiamaps.com/data/openmaptiles/{z}/{x}/{y}.pbf?api_key=ed923bf6-7a17-4cec-aada-832cdb4050e7';
+    // return 'https://api.maptiler.com/tiles/v3-4326/tiles.json?key=x0zt2WeTRQEvX2oFs7PX';
+    return 'https://tiles.stadiamaps.com/data/openmaptiles/{z}/{x}/{y}.pbf?api_key=ed923bf6-7a17-4cec-aada-832cdb4050e7';
+  }
+
+  setRestFormBools(bool value, String type) {
+    setState(() {
+      switch (type) {
+        case 'requesting':
+          _isRequesting = value;
+          if (value) {
+            Future.delayed(const Duration(seconds: 4), () {
+              setState(() {
+                _isRequesting = false;
+                _isAccepted = true;
+              });
+            });
+          }
+          break;
+        case 'destination':
+          _isDestinationSet = value;
+          break;
+        case 'accept':
+          _isAccepted = value;
+          break;
+        case 'searching':
+          _isSearching = value;
+          break;
+        default:
+      }
+    });
   }
 
   @override
@@ -114,7 +148,7 @@ class _HomePageState extends State<HomePage> {
         drawer: CustomDrawer(
           customKey: _key,
         ),
-        // backgroundColor: Colors.grey,
+        resizeToAvoidBottomInset: false,
         body: Stack(
           children: [
             Container(
@@ -129,17 +163,12 @@ class _HomePageState extends State<HomePage> {
                     currentLocation?.latitude ?? 28.2624061,
                     currentLocation?.longitude ?? 83.9687894,
                   ),
-                  maxBounds: LatLngBounds(
-                    LatLng(28.278817, 83.960905),
-                    LatLng(28.171318, 84.028643),
-                  ),
                   plugins: [VectorMapTilesPlugin()],
                 ),
                 layers: [
                   VectorTileLayerOptions(
                       theme: _mapTheme(context),
                       tileProviders: TileProviders({
-                        // 'openmaptiles': _cachingTileProvider(_urlTemplate()),
                         'openmaptiles': _cachingTileProvider(_urlTemplate()),
                       })),
                   MarkerLayerOptions(
@@ -165,27 +194,27 @@ class _HomePageState extends State<HomePage> {
                           ],
                         ),
                       ),
-                      Marker(
-                        width: 20.0,
-                        height: 20.0,
-                        point: LatLng(
-                          28.223877,
-                          83.987730,
-                        ),
-                        builder: (ctx) => Icon(
-                          Iconsax.gps5,
-                          size: 22,
-                          color: Colors.red[600],
-                          shadows: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.2),
-                              spreadRadius: 8,
-                              blurRadius: 10,
-                              offset: const Offset(2, 5),
-                            ),
-                          ],
-                        ),
-                      ),
+                      // Marker(
+                      //   width: 20.0,
+                      //   height: 20.0,
+                      //   point: LatLng(
+                      //     28.223877,
+                      //     83.987730,
+                      //   ),
+                      //   builder: (ctx) => Icon(
+                      //     Iconsax.gps5,
+                      //     size: 22,
+                      //     color: Colors.red[600],
+                      //     shadows: [
+                      //       BoxShadow(
+                      //         color: Colors.grey.withOpacity(0.2),
+                      //         spreadRadius: 8,
+                      //         blurRadius: 10,
+                      //         offset: const Offset(2, 5),
+                      //       ),
+                      //     ],
+                      //   ),
+                      // ),
                     ],
                   ),
                 ],
@@ -429,92 +458,58 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            Container(
-              width: double.infinity,
-              height: _isSearching ? MediaQuery.of(context).size.height : 0,
-              color: Colors.white,
-              padding: const EdgeInsets.only(
-                top: 50.0,
-                left: 10.0,
-              ),
-              child: Column(
-                // mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      FocusManager.instance.primaryFocus?.unfocus();
-                      _destinationController.text = '';
-                      setState(() {
-                        _isSearching = false;
-                      });
-                    },
-                    icon: const Icon(Icons.arrow_back_ios),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      top: 20.0,
-                      left: 20.0,
-                      right: 20.0,
-                      bottom: 5.0,
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                width: double.infinity,
+                height: _isSearching
+                    ? (!_isRequesting && !_isDestinationSet && !_isAccepted)
+                        ? MediaQuery.of(context).size.height
+                        : MediaQuery.of(context).size.height * 0.5
+                    : 0,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black38.withOpacity(0.2),
+                      spreadRadius: 5,
+                      blurRadius: 7,
+                      offset: const Offset(0, -1),
                     ),
-                    child: TextFormField(
-                      controller: _sourceController,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'Pick up location',
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: TextField(
-                      controller: _destinationController,
-                      focusNode: myFocusNode,
-                      autofocus: _isSearching ? true : false,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'Destination',
-                      ),
-                    ),
-                  ),
-                  _destinationController.text != ''
-                      ? Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 30.0,
-                          ),
-                          child: Center(
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                primary: Colors.green[400],
-                                shape: const RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(5),
-                                  ),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 15,
-                                  horizontal: 35.0,
-                                ),
-                              ),
-                              onPressed: () {},
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
-                                children: const [
-                                  Icon(Iconsax.car),
-                                  Padding(
-                                    padding: EdgeInsets.only(left: 10),
-                                    child: Text('Request Ride'),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+                  ],
+                ),
+                child: Form(
+                  key: _rideRequestFormKey,
+                  child: _isRequesting
+                      ? RequestingContainer(
+                          callback: () => setRestFormBools(false, 'requesting'),
                         )
-                      : Container(),
-                ],
+                      : _isAccepted
+                          ? AcceptedContainer(
+                              callback: () {
+                                setRestFormBools(false, 'accept');
+                                setRestFormBools(false, 'searching');
+                                setRestFormBools(false, 'destination');
+                              },
+                            )
+                          : _isDestinationSet
+                              ? RideList(
+                                  callback: () =>
+                                      setRestFormBools(true, 'requesting'),
+                                  callback2: () =>
+                                      setRestFormBools(false, 'destination'),
+                                )
+                              : PlaceSearchTextField(
+                                  isSearching: _isSearching,
+                                  destinationController: _destinationController,
+                                  sourceController: _sourceController,
+                                  callback: () =>
+                                      setRestFormBools(false, 'searching'),
+                                  callback2: () =>
+                                      setRestFormBools(true, 'destination'),
+                                  destinationNode: myFocusNode,
+                                ),
+                ),
               ),
             ),
           ],
