@@ -18,8 +18,20 @@ class CustomDrawer extends StatelessWidget {
             children: [
               UserAccountsDrawerHeader(
                 decoration: const BoxDecoration(color: Colors.blueAccent),
-                accountName: Text(profile.getUserData.name),
-                accountEmail: Text(profile.getUserData.email),
+                accountName: Text(
+                  profile.getUserData.name,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                accountEmail: Text(
+                  profile.getUserData.email,
+                  style: const TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
                 currentAccountPicture: Image.network(
                   profile.getUserData.profileUrl,
                   width: 100,
@@ -45,9 +57,16 @@ class CustomDrawer extends StatelessWidget {
                 },
               ),
               ListTile(
+                leading: const Icon(Iconsax.heart),
+                title: const Text('Favorites'),
+                onTap: () {},
+              ),
+              ListTile(
                 leading: const Icon(
                   Iconsax.logout,
                 ),
+                iconColor: Colors.redAccent,
+                textColor: Colors.redAccent,
                 title: const Text('Logout'),
                 onTap: () {
                   AuthService().logout(context);

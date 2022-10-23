@@ -1,15 +1,15 @@
 // ignore_for_file: prefer_const_constructors, depend_on_referenced_packages
-
 import 'package:cabavenue/models/user_model.dart';
 import 'package:cabavenue/providers/profile_provider.dart';
 import 'package:cabavenue/widgets/floating_action_button.dart';
-import 'package:cabavenue/widgets/home/custom_chip.dart';
 import 'package:cabavenue/widgets/home/drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:location/location.dart';
 import 'package:provider/provider.dart';
 import 'package:vector_map_tiles/vector_map_tiles.dart';
 import 'package:vector_tile_renderer/vector_tile_renderer.dart' as vector_theme;
@@ -24,8 +24,30 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final GlobalKey<ScaffoldState> _key = GlobalKey();
   late FocusNode myFocusNode;
+  double initialDestinationContainerPosition = 540.0;
   bool _isSearching = false;
   DateTime? currentBackPressTime;
+
+  final MapController _mapController = MapController();
+  LocationData? currentLocation;
+
+  final TextEditingController _sourceController = TextEditingController();
+  final TextEditingController _destinationController = TextEditingController();
+
+  void getCurrentLocation() async {
+    Location location = Location();
+
+    location.getLocation().then(
+      (location) {
+        currentLocation = location;
+      },
+    );
+    location.onLocationChanged.listen((newLoc) {
+      currentLocation = newLoc;
+      _mapController.move(LatLng(newLoc.latitude!, newLoc.longitude!), 18);
+    });
+    setState(() {});
+  }
 
   void getProfileData() async {
     /**
@@ -53,6 +75,9 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       getProfileData();
     });
+    _sourceController.text = 'Current location';
+
+    getCurrentLocation();
   }
 
   @override
@@ -76,7 +101,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   String _urlTemplate() {
-    return 'https://tiles.stadiamaps.com/data/openmaptiles/{z}/{x}/{y}.pbf?api_key=ed923bf6-7a17-4cec-aada-832cdb4050e7';
+    return 'https://api.maptiler.com/tiles/v3-4326/tiles.json?key=x0zt2WeTRQEvX2oFs7PX';
+    // return 'https://tiles.stadiamaps.com/data/openmaptiles/{z}/{x}/{y}.pbf?api_key=ed923bf6-7a17-4cec-aada-832cdb4050e7';
   }
 
   @override
@@ -93,27 +119,72 @@ class _HomePageState extends State<HomePage> {
           children: [
             Container(
               width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height,
+              height: MediaQuery.of(context).size.height * 0.6,
               color: Colors.grey,
               child: FlutterMap(
+                mapController: _mapController,
                 options: MapOptions(
                   zoom: 18,
-                  center: LatLng(28.2624061, 83.9687894),
+                  center: LatLng(
+                    currentLocation?.latitude ?? 28.2624061,
+                    currentLocation?.longitude ?? 83.9687894,
+                  ),
+                  maxBounds: LatLngBounds(
+                    LatLng(28.278817, 83.960905),
+                    LatLng(28.171318, 84.028643),
+                  ),
                   plugins: [VectorMapTilesPlugin()],
                 ),
                 layers: [
                   VectorTileLayerOptions(
                       theme: _mapTheme(context),
                       tileProviders: TileProviders({
-                        'openmaptiles': _cachingTileProvider(_urlTemplate())
+                        // 'openmaptiles': _cachingTileProvider(_urlTemplate()),
+                        'openmaptiles': _cachingTileProvider(_urlTemplate()),
                       })),
                   MarkerLayerOptions(
                     markers: [
                       Marker(
                         width: 20.0,
                         height: 20.0,
-                        point: LatLng(28.2624061, 83.9687894),
-                        builder: (ctx) => const FlutterLogo(),
+                        point: LatLng(
+                          currentLocation?.latitude ?? 28.2624061,
+                          currentLocation?.longitude ?? 83.9687894,
+                        ),
+                        builder: (ctx) => Icon(
+                          Iconsax.direct_up5,
+                          size: 22,
+                          color: Colors.purple[600],
+                          shadows: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.2),
+                              spreadRadius: 8,
+                              blurRadius: 10,
+                              offset: const Offset(2, 5),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Marker(
+                        width: 20.0,
+                        height: 20.0,
+                        point: LatLng(
+                          28.223877,
+                          83.987730,
+                        ),
+                        builder: (ctx) => Icon(
+                          Iconsax.gps5,
+                          size: 22,
+                          color: Colors.red[600],
+                          shadows: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.2),
+                              spreadRadius: 8,
+                              blurRadius: 10,
+                              offset: const Offset(2, 5),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -122,7 +193,7 @@ class _HomePageState extends State<HomePage> {
             ),
             CustomFAB(
               bgColor: Colors.redAccent,
-              icon: const Icon(Icons.campaign_outlined),
+              icon: const Icon(Iconsax.radar_1),
               herotag: 'emergency-services',
               right: 10,
               top: MediaQuery.of(context).size.height * 0.08,
@@ -132,102 +203,229 @@ class _HomePageState extends State<HomePage> {
             ),
             CustomFAB(
               bgColor: Colors.blueAccent,
-              icon: Icon(Icons.favorite_border_outlined),
-              herotag: 'saved-places',
-              left: 10,
-              bottom: MediaQuery.of(context).size.height * 0.45,
-              onClick: () {},
-            ),
-            CustomFAB(
-              bgColor: Colors.blueAccent,
-              icon: Icon(Icons.menu),
+              icon: Icon(Iconsax.menu5),
               herotag: 'drawer',
               left: 10,
-              bottom: MediaQuery.of(context).size.height * 0.35,
+              top: MediaQuery.of(context).size.height * 0.08,
               onClick: () {
                 _key.currentState!.openDrawer();
               },
             ),
-            Positioned(
-              left: 0,
-              right: 0,
-              top: MediaQuery.of(context).size.height * 0.65,
-              bottom: MediaQuery.of(context).size.height * 0.25,
-              child: Container(
-                width: double.infinity,
-                margin: const EdgeInsets.symmetric(horizontal: 10),
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  children: const [
-                    CustomChip(
-                      label: 'Map',
-                      icon: Icons.location_on_outlined,
-                    ),
-                    CustomChip(
-                      label: 'Home',
-                      icon: Icons.home_outlined,
-                    ),
-                    CustomChip(
-                      label: 'Office',
-                      icon: Icons.maps_home_work_outlined,
-                    ),
-                    CustomChip(
-                      label: 'Cinema',
-                      icon: Icons.camera_indoor_outlined,
-                    ),
-                    CustomChip(
-                      label: 'Add new',
-                      icon: Icons.add_location_alt_outlined,
-                    ),
-                  ],
-                ),
-              ),
-            ),
             Align(
               alignment: Alignment.bottomCenter,
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height * 0.25,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(15),
-                    topRight: Radius.circular(15),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black38.withOpacity(0.2),
-                      spreadRadius: 5,
-                      blurRadius: 7,
-                      offset: const Offset(0, -1), // changes position of shadow
-                    ),
-                  ],
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20.0,
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Select a destination',
-                      style: Theme.of(context).textTheme.headline5,
-                    ),
-                    TextField(
-                      readOnly: true,
-                      onTap: () {
-                        myFocusNode.requestFocus();
-                        setState(() {
-                          _isSearching = true;
-                        });
-                      },
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'Destination',
+              child: GestureDetector(
+                onVerticalDragEnd: (details) {
+                  if (initialDestinationContainerPosition >
+                      details.velocity.pixelsPerSecond.dy) {
+                    myFocusNode.requestFocus();
+                    setState(() {
+                      _isSearching = true;
+                    });
+                  } else {
+                    myFocusNode.unfocus();
+                    setState(() {
+                      _isSearching = false;
+                    });
+                  }
+                },
+                child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height * 0.45,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black38.withOpacity(0.2),
+                        spreadRadius: 5,
+                        blurRadius: 7,
+                        offset: const Offset(0, -1),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 15.0,
+                          horizontal: 30.0,
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: Colors.black26,
+                              width: 1,
+                            ),
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            'Select a destination',
+                            style: Theme.of(context).textTheme.headline6,
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 10.0,
+                          horizontal: 20.0,
+                        ),
+                        child: TextField(
+                          readOnly: true,
+                          onTap: () {
+                            myFocusNode.requestFocus();
+                            setState(() {
+                              _isSearching = true;
+                            });
+                          },
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                            prefixIcon: const Icon(Iconsax.location),
+                            labelText: 'Where do you want to go?',
+                            isDense: true,
+                            filled: true,
+                            fillColor: Colors.grey[200],
+                          ),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _isSearching = true;
+                          });
+                          _destinationController.text = 'Work';
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 10.0,
+                            horizontal: 20.0,
+                          ),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                color: Colors.black12,
+                                width: 1,
+                              ),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(right: 15),
+                                child: CircleAvatar(
+                                  backgroundColor: Colors.grey[400],
+                                  foregroundColor: Colors.black,
+                                  child: const Icon(Iconsax.building),
+                                ),
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: const [
+                                  Text(
+                                    'Work',
+                                    style: TextStyle(
+                                      fontSize: 18.0,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  Text(
+                                    '28.278817, 83.960905',
+                                    style: TextStyle(
+                                      fontSize: 12.0,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            ],
+                          ),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _isSearching = true;
+                          });
+                          _destinationController.text = 'Home';
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 10.0,
+                            horizontal: 20.0,
+                          ),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                color: Colors.black12,
+                                width: 1,
+                              ),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(right: 15),
+                                child: CircleAvatar(
+                                  backgroundColor: Colors.grey[400],
+                                  foregroundColor: Colors.black,
+                                  child: const Icon(Iconsax.home),
+                                ),
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: const [
+                                  Text(
+                                    'Home',
+                                    style: TextStyle(
+                                      fontSize: 18.0,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  Text(
+                                    '28.278817, 83.960905',
+                                    style: TextStyle(
+                                      fontSize: 12.0,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            ],
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.only(top: 20),
+                        child: Center(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              primary: Colors.black,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(100),
+                                ),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 10,
+                                horizontal: 15.0,
+                              ),
+                            ),
+                            onPressed: () {},
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: const [
+                                Icon(Iconsax.heart_add),
+                                Padding(
+                                  padding: EdgeInsets.only(left: 10),
+                                  child: Text('Add Favorite'),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -236,7 +434,7 @@ class _HomePageState extends State<HomePage> {
               height: _isSearching ? MediaQuery.of(context).size.height : 0,
               color: Colors.white,
               padding: const EdgeInsets.only(
-                top: 35.0,
+                top: 50.0,
                 left: 10.0,
               ),
               child: Column(
@@ -246,6 +444,7 @@ class _HomePageState extends State<HomePage> {
                   IconButton(
                     onPressed: () {
                       FocusManager.instance.primaryFocus?.unfocus();
+                      _destinationController.text = '';
                       setState(() {
                         _isSearching = false;
                       });
@@ -260,7 +459,7 @@ class _HomePageState extends State<HomePage> {
                       bottom: 5.0,
                     ),
                     child: TextFormField(
-                      initialValue: 'Your current location',
+                      controller: _sourceController,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         labelText: 'Pick up location',
@@ -270,6 +469,7 @@ class _HomePageState extends State<HomePage> {
                   Padding(
                     padding: const EdgeInsets.all(20.0),
                     child: TextField(
+                      controller: _destinationController,
                       focusNode: myFocusNode,
                       autofocus: _isSearching ? true : false,
                       decoration: const InputDecoration(
@@ -278,6 +478,42 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                   ),
+                  _destinationController.text != ''
+                      ? Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 30.0,
+                          ),
+                          child: Center(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                primary: Colors.green[400],
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(5),
+                                  ),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 15,
+                                  horizontal: 35.0,
+                                ),
+                              ),
+                              onPressed: () {},
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: const [
+                                  Icon(Iconsax.car),
+                                  Padding(
+                                    padding: EdgeInsets.only(left: 10),
+                                    child: Text('Request Ride'),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        )
+                      : Container(),
                 ],
               ),
             ),
