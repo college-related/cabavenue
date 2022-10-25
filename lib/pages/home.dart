@@ -1,4 +1,5 @@
 // ignore_for_file: prefer_const_constructors, depend_on_referenced_packages
+
 import 'package:cabavenue/models/user_model.dart';
 import 'package:cabavenue/providers/profile_provider.dart';
 import 'package:cabavenue/widgets/accepted_container.dart';
@@ -41,6 +42,8 @@ class _HomePageState extends State<HomePage> {
 
   final TextEditingController _sourceController = TextEditingController();
   final TextEditingController _destinationController = TextEditingController();
+  dynamic sourceLocation;
+  dynamic destinationLocation;
 
   void getCurrentLocation() async {
     Location location = Location();
@@ -75,13 +78,17 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  void getInitialLocation() async {
+    currentLocation = await Location().getLocation();
+  }
+
   @override
   void initState() {
     super.initState();
 
+    getInitialLocation();
     myFocusNode = FocusNode();
     getProfileData();
-    _sourceController.text = 'Current location';
 
     // getCurrentLocation();
   }
@@ -137,6 +144,18 @@ class _HomePageState extends State<HomePage> {
         default:
       }
     });
+  }
+
+  setSearchingAndSource() {
+    setState(() {
+      _isSearching = true;
+    });
+    _sourceController.text = 'Current Location';
+    sourceLocation = {
+      "name": "Current Location",
+      "latitude": currentLocation!.latitude,
+      "longitude": currentLocation!.longitude,
+    };
   }
 
   @override
@@ -247,9 +266,7 @@ class _HomePageState extends State<HomePage> {
                   if (initialDestinationContainerPosition >
                       details.velocity.pixelsPerSecond.dy) {
                     myFocusNode.requestFocus();
-                    setState(() {
-                      _isSearching = true;
-                    });
+                    setSearchingAndSource();
                   } else {
                     myFocusNode.unfocus();
                     setState(() {
@@ -304,9 +321,7 @@ class _HomePageState extends State<HomePage> {
                           readOnly: true,
                           onTap: () {
                             myFocusNode.requestFocus();
-                            setState(() {
-                              _isSearching = true;
-                            });
+                            setSearchingAndSource();
                           },
                           decoration: InputDecoration(
                             border: InputBorder.none,
@@ -320,9 +335,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                       GestureDetector(
                         onTap: () {
-                          setState(() {
-                            _isSearching = true;
-                          });
+                          setSearchingAndSource();
                           _destinationController.text = 'Work';
                         },
                         child: Container(
@@ -372,9 +385,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                       GestureDetector(
                         onTap: () {
-                          setState(() {
-                            _isSearching = true;
-                          });
+                          setSearchingAndSource();
                           _destinationController.text = 'Home';
                         },
                         child: Container(
@@ -508,6 +519,8 @@ class _HomePageState extends State<HomePage> {
                                   callback2: () =>
                                       setRestFormBools(true, 'destination'),
                                   destinationNode: myFocusNode,
+                                  sourceLocation: sourceLocation,
+                                  destinationLocation: destinationLocation,
                                 ),
                 ),
               ),

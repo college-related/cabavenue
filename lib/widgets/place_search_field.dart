@@ -1,8 +1,10 @@
+import 'package:cabavenue/services/places_api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 
+// ignore: must_be_immutable
 class PlaceSearchTextField extends StatefulWidget {
-  const PlaceSearchTextField({
+  PlaceSearchTextField({
     Key? key,
     required this.destinationController,
     required this.sourceController,
@@ -10,10 +12,14 @@ class PlaceSearchTextField extends StatefulWidget {
     required this.callback2,
     required this.destinationNode,
     required this.isSearching,
+    required this.sourceLocation,
+    required this.destinationLocation,
   }) : super(key: key);
 
   final TextEditingController destinationController;
   final TextEditingController sourceController;
+  dynamic sourceLocation;
+  dynamic destinationLocation;
   final Function callback;
   final Function callback2;
   final FocusNode destinationNode;
@@ -25,71 +31,37 @@ class PlaceSearchTextField extends StatefulWidget {
 
 class _PlaceSearchTextFieldState extends State<PlaceSearchTextField> {
   List places = [];
+  bool isDestination = true;
 
-  void getplaces() async {
-    places.clear();
-    places.addAll([
-      {
-        'formated': 'Lamachour Marg',
-        'latitude': '28.260957',
-        'longitude': '83.973691',
-        'street': 'Lamachour'
-      },
-      {
-        'formated': 'Lamachaur Hemja Permanent Bridge, Kaski, Nepal',
-        'latitude': '28.263177',
-        'longitude': '83.960682',
-        'street': 'Lamachaur Hemja Permanent Bridge, Kaski, Nepal'
-      },
-      {
-        'formated': 'Lamachour Marg',
-        'latitude': '28.260957',
-        'longitude': '83.973691',
-        'street': 'Lamachour'
-      },
-      {
-        'formated': 'Lamachaur Hemja Permanent Bridge, Kaski, Nepal',
-        'latitude': '28.263177',
-        'longitude': '83.960682',
-        'street': 'Lamachaur Hemja Permanent Bridge, Kaski, Nepal'
-      },
-      {
-        'formated': 'Lamachour Marg',
-        'latitude': '28.260957',
-        'longitude': '83.973691',
-        'street': 'Lamachour'
-      },
-      {
-        'formated': 'Lamachaur Hemja Permanent Bridge, Kaski, Nepal',
-        'latitude': '28.263177',
-        'longitude': '83.960682',
-        'street': 'Lamachaur Hemja Permanent Bridge, Kaski, Nepal'
-      },
-      {
-        'formated': 'Lamachour Marg',
-        'latitude': '28.260957',
-        'longitude': '83.973691',
-        'street': 'Lamachour'
-      },
-      {
-        'formated': 'Lamachaur Hemja Permanent Bridge, Kaski, Nepal',
-        'latitude': '28.263177',
-        'longitude': '83.960682',
-        'street': 'Lamachaur Hemja Permanent Bridge, Kaski, Nepal'
-      },
-    ]);
+  void getplaces(String text, bool isDestination) async {
+    var result = await PlacesApiService().autocomplete(context, text);
+    setState(() {
+      places.clear();
+      places.addAll(result['results']);
+    });
+
+    isDestination = isDestination;
   }
 
   @override
   void initState() {
     super.initState();
-    // widget.destinationNode.addListener(() {
-    //   if (widget.destinationController.text.length >= 3) {
-    //     setState(() {
-    //       getplaces();
-    //     });
-    //   }
-    // });
+  }
+
+  void clearField(String type) {
+    setState(() {
+      switch (type) {
+        case 'source':
+          widget.sourceController.text = '';
+          widget.sourceController.value = TextEditingValue.empty;
+          break;
+        case 'destination':
+          widget.destinationController.text = '';
+          widget.destinationController.value = TextEditingValue.empty;
+          break;
+        default:
+      }
+    });
   }
 
   @override
@@ -116,9 +88,27 @@ class _PlaceSearchTextFieldState extends State<PlaceSearchTextField> {
             ),
             child: TextFormField(
               controller: widget.sourceController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                border: const OutlineInputBorder(),
                 labelText: 'Pick up location',
+                suffixIcon: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        FocusManager.instance.primaryFocus?.unfocus();
+                        getplaces(widget.sourceController.text, false);
+                      },
+                      icon: const Icon(Iconsax.search_normal),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        clearField('source');
+                      },
+                      icon: const Icon(Iconsax.close_circle),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -130,9 +120,28 @@ class _PlaceSearchTextFieldState extends State<PlaceSearchTextField> {
                   controller: widget.destinationController,
                   focusNode: widget.destinationNode,
                   autofocus: widget.isSearching,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
                     labelText: 'Destination',
+                    suffixIcon: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            widget.destinationNode.unfocus();
+                            getplaces(widget.destinationController.text, true);
+                          },
+                          icon: const Icon(Iconsax.search_normal),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            widget.destinationNode.requestFocus();
+                            clearField('destination');
+                          },
+                          icon: const Icon(Iconsax.close_circle),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 SizedBox(
@@ -143,13 +152,35 @@ class _PlaceSearchTextFieldState extends State<PlaceSearchTextField> {
                     itemBuilder: ((context, index) {
                       return ListTile(
                         leading: const Icon(Iconsax.location),
-                        title: Text(places[index]['formated']),
-                        onTap: () {},
+                        title: Text(places[index]['formatted']),
+                        onTap: () {
+                          if (isDestination) {
+                            widget.destinationController.text =
+                                places[index]['formatted'];
+                            widget.destinationLocation = {
+                              "name": places[index]['formatted'],
+                              "latitude": places[index]['lat'],
+                              "longitude": places[index]['lon'],
+                            };
+                          } else {
+                            widget.sourceController.text =
+                                places[index]['formatted'];
+                            widget.sourceLocation = {
+                              "name": places[index]['formatted'],
+                              "latitude": places[index]['lat'],
+                              "longitude": places[index]['lon'],
+                            };
+                          }
+                          setState(() {
+                            places.clear();
+                          });
+                        },
                       );
                     }),
                   ),
                 ),
-                widget.destinationController.text != ''
+                (widget.destinationLocation != null &&
+                        widget.sourceLocation != null)
                     ? Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 20,
