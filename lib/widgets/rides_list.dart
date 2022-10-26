@@ -5,59 +5,22 @@ class RideList extends StatefulWidget {
     Key? key,
     required this.callback,
     required this.callback2,
+    required this.request,
+    required this.drivers,
+    required this.price,
   }) : super(key: key);
 
   final Function callback;
   final Function callback2;
+  final Function request;
+  final List drivers;
+  final String price;
 
   @override
   State<RideList> createState() => _RideListState();
 }
 
 class _RideListState extends State<RideList> {
-  List drivers = [
-    {
-      'name': 'Someone 1',
-      'vehicle': {
-        'brand': 'Maruti',
-        'color': 'White',
-        'plateNumber': 'Ga 12 Pa 9090',
-      },
-      'img': '',
-      'id': '',
-    },
-    {
-      'name': 'Someone 2',
-      'vehicle': {
-        'brand': 'Maruti',
-        'color': 'Red',
-        'plateNumber': 'Ga 12 Pa 9030',
-      },
-      'img': '',
-      'id': '',
-    },
-    {
-      'name': 'Someone 3',
-      'vehicle': {
-        'brand': 'Hudson',
-        'color': 'White',
-        'plateNumber': 'Ga 12 Pa 1234',
-      },
-      'img': '',
-      'id': '',
-    },
-    {
-      'name': 'Someone 4',
-      'vehicle': {
-        'brand': 'Maruti',
-        'color': 'White',
-        'plateNumber': 'Ga 14 Pa 1898',
-      },
-      'img': '',
-      'id': '',
-    },
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -76,11 +39,18 @@ class _RideListState extends State<RideList> {
               ),
             ),
           ),
-          child: Center(
-            child: Text(
-              'Available Rides',
-              style: Theme.of(context).textTheme.headline6,
-            ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Available Cabs',
+                style: Theme.of(context).textTheme.headline6,
+              ),
+              Text(
+                'Rs. ${widget.price}',
+                style: Theme.of(context).textTheme.headline6,
+              ),
+            ],
           ),
         ),
         Padding(
@@ -91,7 +61,7 @@ class _RideListState extends State<RideList> {
                 width: MediaQuery.of(context).size.width * 0.9,
                 height: MediaQuery.of(context).size.height * 0.25,
                 child: ListView.builder(
-                  itemCount: drivers.length,
+                  itemCount: widget.drivers.length,
                   scrollDirection: Axis.horizontal,
                   itemBuilder: (context, index) => Container(
                     padding: const EdgeInsets.symmetric(
@@ -109,19 +79,20 @@ class _RideListState extends State<RideList> {
                         ClipRRect(
                           borderRadius: BorderRadius.circular(2000),
                           child: Image.network(
-                            'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTdc7e_UgMbxfQYnpCkxb0ff5btKUm9xuj99Q&usqp=CAU',
+                            widget.drivers[index]['img'] ??
+                                'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTdc7e_UgMbxfQYnpCkxb0ff5btKUm9xuj99Q&usqp=CAU',
                             height: 90,
                             width: 90,
                           ),
                         ),
                         Text(
-                          drivers[index]['vehicle']['brand'],
+                          widget.drivers[index]['vehicle']['model'],
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
-                          drivers[index]['vehicle']['color'],
+                          widget.drivers[index]['vehicle']['color'],
                           style: const TextStyle(
                             fontSize: 12.0,
                           ),
@@ -139,7 +110,9 @@ class _RideListState extends State<RideList> {
                               horizontal: 35.0,
                             ),
                           ),
-                          onPressed: () {
+                          onPressed: () async {
+                            await widget.request(
+                                context, widget.drivers[index]['id']);
                             widget.callback();
                           },
                           child: const Text(

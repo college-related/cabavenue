@@ -1,7 +1,9 @@
 // ignore_for_file: prefer_const_constructors, depend_on_referenced_packages
 
 import 'package:cabavenue/models/user_model.dart';
+import 'package:cabavenue/providers/destination_provider.dart';
 import 'package:cabavenue/providers/profile_provider.dart';
+import 'package:cabavenue/services/ride_service.dart';
 import 'package:cabavenue/widgets/accepted_container.dart';
 import 'package:cabavenue/widgets/floating_action_button.dart';
 import 'package:cabavenue/widgets/home/drawer.dart';
@@ -40,10 +42,12 @@ class _HomePageState extends State<HomePage> {
   final MapController _mapController = MapController();
   LocationData? currentLocation;
 
-  final TextEditingController _sourceController = TextEditingController();
   final TextEditingController _destinationController = TextEditingController();
+  final RideService _rideService = RideService();
   dynamic sourceLocation;
-  dynamic destinationLocation;
+  // dynamic destinationLocation;
+  List drivers = [];
+  String price = '';
 
   void getCurrentLocation() async {
     Location location = Location();
@@ -123,14 +127,6 @@ class _HomePageState extends State<HomePage> {
       switch (type) {
         case 'requesting':
           _isRequesting = value;
-          if (value) {
-            Future.delayed(const Duration(seconds: 4), () {
-              setState(() {
-                _isRequesting = false;
-                _isAccepted = true;
-              });
-            });
-          }
           break;
         case 'destination':
           _isDestinationSet = value;
@@ -150,12 +146,35 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _isSearching = true;
     });
-    _sourceController.text = 'Current Location';
     sourceLocation = {
       "name": "Current Location",
       "latitude": currentLocation!.latitude,
       "longitude": currentLocation!.longitude,
     };
+  }
+
+  searchRides() async {
+    var driverList = await _rideService.searchRides(
+      context,
+      currentLocation!.latitude.toString(),
+      currentLocation!.longitude.toString(),
+    );
+
+    setState(() {
+      drivers.clear();
+      drivers.addAll(driverList['drivers']);
+      price = driverList['price'].toString();
+    });
+  }
+
+  requestCab(BuildContext context, String id) async {
+    await _rideService.requestRide(
+      context,
+      id,
+      Provider.of<DestinationProvider>(context, listen: false).getDestination,
+      sourceLocation,
+      price,
+    );
   }
 
   @override
@@ -168,115 +187,339 @@ class _HomePageState extends State<HomePage> {
           customKey: _key,
         ),
         resizeToAvoidBottomInset: false,
-        body: Stack(
-          children: [
-            Container(
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height * 0.6,
-              color: Colors.grey,
-              child: FlutterMap(
-                mapController: _mapController,
-                options: MapOptions(
-                  zoom: 18,
-                  center: LatLng(
-                    currentLocation?.latitude ?? 28.2624061,
-                    currentLocation?.longitude ?? 83.9687894,
+        body: Consumer<DestinationProvider>(
+          builder: (context, value, child) => Stack(
+            children: [
+              Container(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height * 0.6,
+                color: Colors.grey,
+                child: FlutterMap(
+                  mapController: _mapController,
+                  options: MapOptions(
+                    zoom: 18,
+                    center: LatLng(
+                      currentLocation?.latitude ?? 28.2624061,
+                      currentLocation?.longitude ?? 83.9687894,
+                    ),
+                    plugins: [VectorMapTilesPlugin()],
                   ),
-                  plugins: [VectorMapTilesPlugin()],
+                  layers: [
+                    VectorTileLayerOptions(
+                        theme: _mapTheme(context),
+                        tileProviders: TileProviders({
+                          'openmaptiles': _cachingTileProvider(_urlTemplate()),
+                        })),
+                    MarkerLayerOptions(
+                      markers: [
+                        Marker(
+                          width: 20.0,
+                          height: 20.0,
+                          point: LatLng(
+                            currentLocation?.latitude ?? 28.2624061,
+                            currentLocation?.longitude ?? 83.9687894,
+                          ),
+                          builder: (ctx) => Icon(
+                            Iconsax.direct_up5,
+                            size: 22,
+                            color: Colors.purple[600],
+                            shadows: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.2),
+                                spreadRadius: 8,
+                                blurRadius: 10,
+                                offset: const Offset(2, 5),
+                              ),
+                            ],
+                          ),
+                        ),
+                        value.getDestination != null
+                            ? Marker(
+                                width: 20.0,
+                                height: 20.0,
+                                point: LatLng(
+                                  value.getDestination['latitude'],
+                                  value.getDestination['longitude'],
+                                ),
+                                builder: (ctx) => Icon(
+                                  Iconsax.gps5,
+                                  size: 22,
+                                  color: Colors.red[600],
+                                  shadows: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.2),
+                                      spreadRadius: 8,
+                                      blurRadius: 10,
+                                      offset: const Offset(2, 5),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : Marker(
+                                width: 0.0,
+                                height: 0.0,
+                                point: LatLng(
+                                  28.223877,
+                                  83.987730,
+                                ),
+                                builder: (ctx) => Icon(
+                                  Iconsax.gps5,
+                                  size: 0,
+                                  color: Colors.black,
+                                  shadows: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.2),
+                                      spreadRadius: 8,
+                                      blurRadius: 10,
+                                      offset: const Offset(2, 5),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                      ],
+                    ),
+                  ],
                 ),
-                layers: [
-                  VectorTileLayerOptions(
-                      theme: _mapTheme(context),
-                      tileProviders: TileProviders({
-                        'openmaptiles': _cachingTileProvider(_urlTemplate()),
-                      })),
-                  MarkerLayerOptions(
-                    markers: [
-                      Marker(
-                        width: 20.0,
-                        height: 20.0,
-                        point: LatLng(
-                          currentLocation?.latitude ?? 28.2624061,
-                          currentLocation?.longitude ?? 83.9687894,
-                        ),
-                        builder: (ctx) => Icon(
-                          Iconsax.direct_up5,
-                          size: 22,
-                          color: Colors.purple[600],
-                          shadows: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.2),
-                              spreadRadius: 8,
-                              blurRadius: 10,
-                              offset: const Offset(2, 5),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Marker(
-                      //   width: 20.0,
-                      //   height: 20.0,
-                      //   point: LatLng(
-                      //     28.223877,
-                      //     83.987730,
-                      //   ),
-                      //   builder: (ctx) => Icon(
-                      //     Iconsax.gps5,
-                      //     size: 22,
-                      //     color: Colors.red[600],
-                      //     shadows: [
-                      //       BoxShadow(
-                      //         color: Colors.grey.withOpacity(0.2),
-                      //         spreadRadius: 8,
-                      //         blurRadius: 10,
-                      //         offset: const Offset(2, 5),
-                      //       ),
-                      //     ],
-                      //   ),
-                      // ),
-                    ],
-                  ),
-                ],
               ),
-            ),
-            CustomFAB(
-              bgColor: Colors.redAccent,
-              icon: const Icon(Iconsax.radar_1),
-              herotag: 'emergency-services',
-              right: 10,
-              top: MediaQuery.of(context).size.height * 0.08,
-              onClick: () {
-                Navigator.pushNamed(context, '/emergency');
-              },
-            ),
-            CustomFAB(
-              bgColor: Colors.blueAccent,
-              icon: Icon(Iconsax.menu5),
-              herotag: 'drawer',
-              left: 10,
-              top: MediaQuery.of(context).size.height * 0.08,
-              onClick: () {
-                _key.currentState!.openDrawer();
-              },
-            ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: GestureDetector(
-                onVerticalDragEnd: (details) {
-                  if (initialDestinationContainerPosition >
-                      details.velocity.pixelsPerSecond.dy) {
-                    myFocusNode.requestFocus();
-                    setSearchingAndSource();
-                  } else {
-                    myFocusNode.unfocus();
-                    setState(() {
-                      _isSearching = false;
-                    });
-                  }
+              CustomFAB(
+                bgColor: Colors.redAccent,
+                icon: const Icon(Iconsax.radar_1),
+                herotag: 'emergency-services',
+                right: 10,
+                top: MediaQuery.of(context).size.height * 0.08,
+                onClick: () {
+                  Navigator.pushNamed(context, '/emergency');
                 },
+              ),
+              CustomFAB(
+                bgColor: Colors.blueAccent,
+                icon: Icon(Iconsax.menu5),
+                herotag: 'drawer',
+                left: 10,
+                top: MediaQuery.of(context).size.height * 0.08,
+                onClick: () {
+                  _key.currentState!.openDrawer();
+                },
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: GestureDetector(
+                  onVerticalDragEnd: (details) {
+                    if (initialDestinationContainerPosition >
+                        details.velocity.pixelsPerSecond.dy) {
+                      myFocusNode.requestFocus();
+                      setSearchingAndSource();
+                    } else {
+                      myFocusNode.unfocus();
+                      setState(() {
+                        _isSearching = false;
+                      });
+                    }
+                  },
+                  child: Container(
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height * 0.45,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black38.withOpacity(0.2),
+                          spreadRadius: 5,
+                          blurRadius: 7,
+                          offset: const Offset(0, -1),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 15.0,
+                            horizontal: 30.0,
+                          ),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                color: Colors.black26,
+                                width: 1,
+                              ),
+                            ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              'Select a destination',
+                              style: Theme.of(context).textTheme.headline6,
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 10.0,
+                            horizontal: 20.0,
+                          ),
+                          child: TextField(
+                            readOnly: true,
+                            onTap: () {
+                              myFocusNode.requestFocus();
+                              setSearchingAndSource();
+                            },
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                              prefixIcon: const Icon(Iconsax.location),
+                              labelText: 'Where do you want to go?',
+                              isDense: true,
+                              filled: true,
+                              fillColor: Colors.grey[200],
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            setSearchingAndSource();
+                            _destinationController.text = 'Work';
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 10.0,
+                              horizontal: 20.0,
+                            ),
+                            decoration: BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: Colors.black12,
+                                  width: 1,
+                                ),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 15),
+                                  child: CircleAvatar(
+                                    backgroundColor: Colors.grey[400],
+                                    foregroundColor: Colors.black,
+                                    child: const Icon(Iconsax.building),
+                                  ),
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: const [
+                                    Text(
+                                      'Work',
+                                      style: TextStyle(
+                                        fontSize: 18.0,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    Text(
+                                      '28.278817, 83.960905',
+                                      style: TextStyle(
+                                        fontSize: 12.0,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            setSearchingAndSource();
+                            _destinationController.text = 'Home';
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 10.0,
+                              horizontal: 20.0,
+                            ),
+                            decoration: BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: Colors.black12,
+                                  width: 1,
+                                ),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 15),
+                                  child: CircleAvatar(
+                                    backgroundColor: Colors.grey[400],
+                                    foregroundColor: Colors.black,
+                                    child: const Icon(Iconsax.home),
+                                  ),
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: const [
+                                    Text(
+                                      'Home',
+                                      style: TextStyle(
+                                        fontSize: 18.0,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    Text(
+                                      '28.278817, 83.960905',
+                                      style: TextStyle(
+                                        fontSize: 12.0,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.only(top: 20),
+                          child: Center(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                primary: Colors.black,
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(100),
+                                  ),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 10,
+                                  horizontal: 15.0,
+                                ),
+                              ),
+                              onPressed: () {},
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: const [
+                                  Icon(Iconsax.heart_add),
+                                  Padding(
+                                    padding: EdgeInsets.only(left: 10),
+                                    child: Text('Add Favorite'),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
                 child: Container(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height * 0.45,
+                  width: double.infinity,
+                  height: _isSearching
+                      ? (!_isRequesting && !_isDestinationSet && !_isAccepted)
+                          ? MediaQuery.of(context).size.height
+                          : MediaQuery.of(context).size.height * 0.5
+                      : 0,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     boxShadow: [
@@ -288,244 +531,49 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ],
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 15.0,
-                          horizontal: 30.0,
-                        ),
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                              color: Colors.black26,
-                              width: 1,
-                            ),
-                          ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            'Select a destination',
-                            style: Theme.of(context).textTheme.headline6,
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 10.0,
-                          horizontal: 20.0,
-                        ),
-                        child: TextField(
-                          readOnly: true,
-                          onTap: () {
-                            myFocusNode.requestFocus();
-                            setSearchingAndSource();
-                          },
-                          decoration: InputDecoration(
-                            border: InputBorder.none,
-                            prefixIcon: const Icon(Iconsax.location),
-                            labelText: 'Where do you want to go?',
-                            isDense: true,
-                            filled: true,
-                            fillColor: Colors.grey[200],
-                          ),
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          setSearchingAndSource();
-                          _destinationController.text = 'Work';
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 10.0,
-                            horizontal: 20.0,
-                          ),
-                          decoration: BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(
-                                color: Colors.black12,
-                                width: 1,
-                              ),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(right: 15),
-                                child: CircleAvatar(
-                                  backgroundColor: Colors.grey[400],
-                                  foregroundColor: Colors.black,
-                                  child: const Icon(Iconsax.building),
-                                ),
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: const [
-                                  Text(
-                                    'Work',
-                                    style: TextStyle(
-                                      fontSize: 18.0,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  Text(
-                                    '28.278817, 83.960905',
-                                    style: TextStyle(
-                                      fontSize: 12.0,
-                                    ),
-                                  ),
-                                ],
+                  child: Form(
+                    key: _rideRequestFormKey,
+                    child: _isRequesting
+                        ? RequestingContainer(
+                            callback: () =>
+                                setRestFormBools(false, 'requesting'),
+                          )
+                        : _isAccepted
+                            ? AcceptedContainer(
+                                callback: () {
+                                  setRestFormBools(false, 'accept');
+                                  setRestFormBools(false, 'searching');
+                                  setRestFormBools(false, 'destination');
+                                },
                               )
-                            ],
-                          ),
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          setSearchingAndSource();
-                          _destinationController.text = 'Home';
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 10.0,
-                            horizontal: 20.0,
-                          ),
-                          decoration: BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(
-                                color: Colors.black12,
-                                width: 1,
-                              ),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(right: 15),
-                                child: CircleAvatar(
-                                  backgroundColor: Colors.grey[400],
-                                  foregroundColor: Colors.black,
-                                  child: const Icon(Iconsax.home),
-                                ),
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: const [
-                                  Text(
-                                    'Home',
-                                    style: TextStyle(
-                                      fontSize: 18.0,
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                            : _isDestinationSet
+                                ? RideList(
+                                    callback: () =>
+                                        setRestFormBools(true, 'requesting'),
+                                    callback2: () =>
+                                        setRestFormBools(false, 'destination'),
+                                    request: requestCab,
+                                    drivers: drivers,
+                                    price: price,
+                                  )
+                                : PlaceSearchTextField(
+                                    isSearching: _isSearching,
+                                    destinationController:
+                                        _destinationController,
+                                    callback: () =>
+                                        setRestFormBools(false, 'searching'),
+                                    callback2: () async {
+                                      await searchRides();
+                                      setRestFormBools(true, 'destination');
+                                    },
+                                    destinationNode: myFocusNode,
+                                    destinationLocation: value.getDestination,
                                   ),
-                                  Text(
-                                    '28.278817, 83.960905',
-                                    style: TextStyle(
-                                      fontSize: 12.0,
-                                    ),
-                                  ),
-                                ],
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.only(top: 20),
-                        child: Center(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              primary: Colors.black,
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(100),
-                                ),
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 10,
-                                horizontal: 15.0,
-                              ),
-                            ),
-                            onPressed: () {},
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              mainAxisSize: MainAxisSize.min,
-                              children: const [
-                                Icon(Iconsax.heart_add),
-                                Padding(
-                                  padding: EdgeInsets.only(left: 10),
-                                  child: Text('Add Favorite'),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
                   ),
                 ),
               ),
-            ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                width: double.infinity,
-                height: _isSearching
-                    ? (!_isRequesting && !_isDestinationSet && !_isAccepted)
-                        ? MediaQuery.of(context).size.height
-                        : MediaQuery.of(context).size.height * 0.5
-                    : 0,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black38.withOpacity(0.2),
-                      spreadRadius: 5,
-                      blurRadius: 7,
-                      offset: const Offset(0, -1),
-                    ),
-                  ],
-                ),
-                child: Form(
-                  key: _rideRequestFormKey,
-                  child: _isRequesting
-                      ? RequestingContainer(
-                          callback: () => setRestFormBools(false, 'requesting'),
-                        )
-                      : _isAccepted
-                          ? AcceptedContainer(
-                              callback: () {
-                                setRestFormBools(false, 'accept');
-                                setRestFormBools(false, 'searching');
-                                setRestFormBools(false, 'destination');
-                              },
-                            )
-                          : _isDestinationSet
-                              ? RideList(
-                                  callback: () =>
-                                      setRestFormBools(true, 'requesting'),
-                                  callback2: () =>
-                                      setRestFormBools(false, 'destination'),
-                                )
-                              : PlaceSearchTextField(
-                                  isSearching: _isSearching,
-                                  destinationController: _destinationController,
-                                  sourceController: _sourceController,
-                                  callback: () =>
-                                      setRestFormBools(false, 'searching'),
-                                  callback2: () =>
-                                      setRestFormBools(true, 'destination'),
-                                  destinationNode: myFocusNode,
-                                  sourceLocation: sourceLocation,
-                                  destinationLocation: destinationLocation,
-                                ),
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
