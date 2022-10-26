@@ -1,5 +1,6 @@
 import 'package:cabavenue/pages/favorite_places.dart';
 import 'package:cabavenue/pages/splash_screen.dart';
+import 'package:cabavenue/providers/destination_provider.dart';
 import 'package:cabavenue/providers/profile_provider.dart';
 import 'package:cabavenue/utils/theme.dart';
 import 'package:flutter/material.dart';
@@ -24,6 +25,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => ProfileProvider()),
+        ChangeNotifierProvider(create: (context) => DestinationProvider()),
       ],
       child: MaterialApp(
         title: 'Flutter Demo',
