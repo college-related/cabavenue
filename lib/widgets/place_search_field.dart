@@ -1,24 +1,22 @@
+import 'package:cabavenue/providers/destination_provider.dart';
 import 'package:cabavenue/services/places_api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
 class PlaceSearchTextField extends StatefulWidget {
   PlaceSearchTextField({
     Key? key,
     required this.destinationController,
-    required this.sourceController,
     required this.callback,
     required this.callback2,
     required this.destinationNode,
     required this.isSearching,
-    required this.sourceLocation,
     required this.destinationLocation,
   }) : super(key: key);
 
   final TextEditingController destinationController;
-  final TextEditingController sourceController;
-  dynamic sourceLocation;
   dynamic destinationLocation;
   final Function callback;
   final Function callback2;
@@ -31,16 +29,13 @@ class PlaceSearchTextField extends StatefulWidget {
 
 class _PlaceSearchTextFieldState extends State<PlaceSearchTextField> {
   List places = [];
-  bool isDestination = true;
 
-  void getplaces(String text, bool isDestination) async {
+  void getplaces(String text) async {
     var result = await PlacesApiService().autocomplete(context, text);
     setState(() {
       places.clear();
       places.addAll(result['results']);
     });
-
-    isDestination = isDestination;
   }
 
   @override
@@ -48,19 +43,10 @@ class _PlaceSearchTextFieldState extends State<PlaceSearchTextField> {
     super.initState();
   }
 
-  void clearField(String type) {
+  void clearField() {
     setState(() {
-      switch (type) {
-        case 'source':
-          widget.sourceController.text = '';
-          widget.sourceController.value = TextEditingValue.empty;
-          break;
-        case 'destination':
-          widget.destinationController.text = '';
-          widget.destinationController.value = TextEditingValue.empty;
-          break;
-        default:
-      }
+      widget.destinationController.text = '';
+      widget.destinationController.value = TextEditingValue.empty;
     });
   }
 
@@ -86,30 +72,24 @@ class _PlaceSearchTextFieldState extends State<PlaceSearchTextField> {
               right: 20.0,
               bottom: 5.0,
             ),
-            child: TextFormField(
-              controller: widget.sourceController,
-              decoration: InputDecoration(
-                border: const OutlineInputBorder(),
-                labelText: 'Pick up location',
-                suffixIcon: Row(
-                  mainAxisSize: MainAxisSize.min,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(right: 8.0),
+                  child: Icon(Iconsax.location),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    IconButton(
-                      onPressed: () {
-                        FocusManager.instance.primaryFocus?.unfocus();
-                        getplaces(widget.sourceController.text, false);
-                      },
-                      icon: const Icon(Iconsax.search_normal),
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        clearField('source');
-                      },
-                      icon: const Icon(Iconsax.close_circle),
+                    const Text('Pick up location'),
+                    Text(
+                      'Current Location',
+                      style: Theme.of(context).textTheme.displaySmall,
                     ),
                   ],
                 ),
-              ),
+              ],
             ),
           ),
           Container(
@@ -129,14 +109,14 @@ class _PlaceSearchTextFieldState extends State<PlaceSearchTextField> {
                         IconButton(
                           onPressed: () {
                             widget.destinationNode.unfocus();
-                            getplaces(widget.destinationController.text, true);
+                            getplaces(widget.destinationController.text);
                           },
                           icon: const Icon(Iconsax.search_normal),
                         ),
                         IconButton(
                           onPressed: () {
                             widget.destinationNode.requestFocus();
-                            clearField('destination');
+                            clearField();
                           },
                           icon: const Icon(Iconsax.close_circle),
                         ),
@@ -154,24 +134,18 @@ class _PlaceSearchTextFieldState extends State<PlaceSearchTextField> {
                         leading: const Icon(Iconsax.location),
                         title: Text(places[index]['formatted']),
                         onTap: () {
-                          if (isDestination) {
-                            widget.destinationController.text =
-                                places[index]['formatted'];
-                            widget.destinationLocation = {
-                              "name": places[index]['formatted'],
-                              "latitude": places[index]['lat'],
-                              "longitude": places[index]['lon'],
-                            };
-                          } else {
-                            widget.sourceController.text =
-                                places[index]['formatted'];
-                            widget.sourceLocation = {
-                              "name": places[index]['formatted'],
-                              "latitude": places[index]['lat'],
-                              "longitude": places[index]['lon'],
-                            };
-                          }
+                          widget.destinationController.text =
+                              places[index]['formatted'];
+
                           setState(() {
+                            Provider.of<DestinationProvider>(
+                              context,
+                              listen: false,
+                            ).setDestination({
+                              "name": places[index]['formatted'],
+                              "latitude": places[index]['lat'],
+                              "longitude": places[index]['lon'],
+                            });
                             places.clear();
                           });
                         },
@@ -179,8 +153,7 @@ class _PlaceSearchTextFieldState extends State<PlaceSearchTextField> {
                     }),
                   ),
                 ),
-                (widget.destinationLocation != null &&
-                        widget.sourceLocation != null)
+                widget.destinationLocation != null
                     ? Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 20,
@@ -200,8 +173,8 @@ class _PlaceSearchTextFieldState extends State<PlaceSearchTextField> {
                                 horizontal: 35.0,
                               ),
                             ),
-                            onPressed: () {
-                              widget.callback2();
+                            onPressed: () async {
+                              await widget.callback2();
                             },
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
