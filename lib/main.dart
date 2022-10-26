@@ -1,3 +1,4 @@
+import 'package:cabavenue/pages/favorite_places.dart';
 import 'package:cabavenue/pages/splash_screen.dart';
 import 'package:cabavenue/providers/profile_provider.dart';
 import 'package:cabavenue/utils/theme.dart';
@@ -35,6 +36,7 @@ class MyApp extends StatelessWidget {
           '/profile-edit': (context) => const EditProfilePage(),
           '/emergency': (context) => const EmergencyPage(),
           '/auth': (context) => const AuthPage(),
+          '/favorite-places': (context) => const FavoritePlaces(),
         },
         // home: const MyHomePage(),
       ),
