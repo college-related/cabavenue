@@ -37,6 +37,7 @@ dependencies:
   cloudinary_sdk: ^4.0.2+10
   location: ^4.4.0
   flutter_phone_direct_caller: ^2.1.1
+  liquid_pull_to_refresh: ^3.0.1
 
 dev_dependencies:
   flutter_test:
