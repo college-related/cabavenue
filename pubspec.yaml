@@ -36,6 +36,7 @@ dependencies:
   image_picker: ^0.8.6
   cloudinary_sdk: ^4.0.2+10
   location: ^4.4.0
+  url_launcher: ^6.1.6
 
 dev_dependencies:
   flutter_test:

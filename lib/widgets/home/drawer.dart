@@ -59,7 +59,9 @@ class CustomDrawer extends StatelessWidget {
               ListTile(
                 leading: const Icon(Iconsax.heart),
                 title: const Text('Favorites'),
-                onTap: () {},
+                onTap: () {
+                  Navigator.pushNamed(context, '/favorite-places');
+                },
               ),
               ListTile(
                 leading: const Icon(
