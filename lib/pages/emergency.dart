@@ -1,6 +1,11 @@
+import 'dart:convert';
+
+import 'package:cabavenue/models/emergency_model.dart';
+import 'package:cabavenue/services/emergency_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 
 class Emergency extends StatelessWidget {
   const Emergency({Key? key}) : super(key: key);
@@ -19,6 +24,32 @@ class EmergencyPage extends StatefulWidget {
 }
 
 class _EmergencyPageState extends State<EmergencyPage> {
+  late Future<List<EmergencyModel>> emergencyCabs;
+  final GlobalKey<LiquidPullToRefreshState> _refreshIndicatorKey =
+      GlobalKey<LiquidPullToRefreshState>();
+
+  Future<List<EmergencyModel>> getEmergencyCabs() async {
+    var cabs = await EmergencyService().getEmergencyCabs(context);
+    List<EmergencyModel> drivers = [];
+
+    for (var cab in cabs) {
+      drivers.add(await EmergencyModel.deserialize(jsonEncode(cab).toString()));
+    }
+    return drivers;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    emergencyCabs = getEmergencyCabs();
+  }
+
+  Future<void> _onRefresh() async {
+    setState(() {
+      emergencyCabs = getEmergencyCabs();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -127,22 +158,42 @@ class _EmergencyPageState extends State<EmergencyPage> {
                   ],
                 ),
               ),
-              SizedBox(
-                width: double.infinity,
-                height: MediaQuery.of(context).size.height * 0.5,
-                child: ListView(
-                  children: [
-                    ListTile(
-                      leading: const Icon(Iconsax.car),
-                      title: const Text('Ram bahadur'),
-                      isThreeLine: true,
-                      subtitle: const Text('9876543210'),
-                      trailing: const Icon(Iconsax.call),
-                      onTap: () async {
-                        await FlutterPhoneDirectCaller.callNumber('9876543210');
-                      },
-                    ),
-                  ],
+              LiquidPullToRefresh(
+                key: _refreshIndicatorKey,
+                showChildOpacityTransition: false,
+                onRefresh: _onRefresh,
+                child: FutureBuilder<List<EmergencyModel>>(
+                  future: emergencyCabs,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      return SizedBox(
+                        width: double.infinity,
+                        height: MediaQuery.of(context).size.height * 0.5,
+                        child: ListView.builder(
+                          itemCount: snapshot.data!.length,
+                          itemBuilder: (context, index) => ListTile(
+                            leading: const Icon(Iconsax.car),
+                            title: Text(snapshot.data![index].name),
+                            isThreeLine: true,
+                            subtitle:
+                                Text(snapshot.data![index].phone.toString()),
+                            trailing: const Icon(Iconsax.call),
+                            onTap: () async {
+                              await FlutterPhoneDirectCaller.callNumber(
+                                  snapshot.data![index].phone.toString());
+                            },
+                          ),
+                        ),
+                      );
+                    }
+                    return SizedBox(
+                      width: double.infinity,
+                      height: MediaQuery.of(context).size.height * 0.8,
+                      child: const Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
+                  },
                 ),
               ),
             ],
