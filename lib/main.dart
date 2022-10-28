@@ -1,10 +1,19 @@
+import 'package:cabavenue/pages/favorite_places.dart';
+import 'package:cabavenue/pages/splash_screen.dart';
+import 'package:cabavenue/providers/destination_provider.dart';
+import 'package:cabavenue/providers/profile_provider.dart';
+import 'package:cabavenue/utils/theme.dart';
+import 'package:flutter/material.dart';
 import 'package:cabavenue/pages/home.dart';
+import 'package:cabavenue/pages/auth.dart';
 import 'package:cabavenue/pages/profile_edit.dart';
 import 'package:cabavenue/pages/ride_history.dart';
 import 'package:cabavenue/pages/emergency.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:provider/provider.dart';
 
-void main() {
+Future main() async {
+  await dotenv.load(fileName: ".env");
   runApp(const MyApp());
 }
 
@@ -13,19 +22,26 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => ProfileProvider()),
+        ChangeNotifierProvider(create: (context) => DestinationProvider()),
+      ],
+      child: MaterialApp(
+        title: 'Flutter Demo',
+        theme: AppTheme.main(),
+        debugShowCheckedModeBanner: false,
+        routes: {
+          '/': (context) => const SplashScreen(),
+          '/home': (context) => const HomePage(),
+          '/ride-history': (context) => const RideHistory(),
+          '/profile-edit': (context) => const EditProfilePage(),
+          '/emergency': (context) => const EmergencyPage(),
+          '/auth': (context) => const AuthPage(),
+          '/favorite-places': (context) => const FavoritePlaces(),
+        },
+        // home: const MyHomePage(),
       ),
-      debugShowCheckedModeBanner: false,
-      routes: {
-        '/': (context) => const MyHomePage(),
-        '/ride-history': (context) => const RideHistory(),
-        '/profile-edit': (context) => const EditProfilePage(),
-        '/emergency': (context) => const EmergencyPage(),
-      },
-      // home: const MyHomePage(),
     );
   }
 }
