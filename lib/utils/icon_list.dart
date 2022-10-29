@@ -11,6 +11,16 @@ class IconList {
     Icon(Iconsax.building_3),
     Icon(Iconsax.tree),
     Icon(Iconsax.bag),
+    Icon(Iconsax.dollar_circle),
+    Icon(Iconsax.people),
+    Icon(Iconsax.gas_station),
+    Icon(Iconsax.teacher),
+    Icon(Iconsax.shop),
+    Icon(Iconsax.bank),
+    Icon(Iconsax.coffee),
+    Icon(Iconsax.cake),
+    Icon(Iconsax.shopping_cart),
+    Icon(Iconsax.gallery),
   ];
 
   List<Icon> get getList => _icons;
