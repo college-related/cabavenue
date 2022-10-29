@@ -1,13 +1,9 @@
 // ignore_for_file: prefer_const_constructors, depend_on_referenced_packages
-
-import 'dart:convert';
-
-import 'package:cabavenue/models/favorite_model.dart';
 import 'package:cabavenue/models/user_model.dart';
 import 'package:cabavenue/providers/destination_provider.dart';
 import 'package:cabavenue/providers/profile_provider.dart';
-import 'package:cabavenue/services/favorite_service.dart';
 import 'package:cabavenue/services/ride_service.dart';
+import 'package:cabavenue/utils/icon_list.dart';
 import 'package:cabavenue/widgets/accepted_container.dart';
 import 'package:cabavenue/widgets/floating_action_button.dart';
 import 'package:cabavenue/widgets/home/drawer.dart';
@@ -53,18 +49,6 @@ class _HomePageState extends State<HomePage> {
   List drivers = [];
   String price = '';
 
-  late Future<List<FavoriteModel>> favoritePlaces;
-
-  Future<List<FavoriteModel>> getFavoritePlaces() async {
-    var favs = await FavoriteService().getFavorites(context);
-    List<FavoriteModel> favPlaces = [];
-    for (var fav in favs['favoritePlaces']) {
-      favPlaces
-          .add(await FavoriteModel.deserialize(jsonEncode(fav).toString()));
-    }
-    return favPlaces;
-  }
-
   void getCurrentLocation() async {
     Location location = Location();
 
@@ -109,8 +93,6 @@ class _HomePageState extends State<HomePage> {
     getInitialLocation();
     myFocusNode = FocusNode();
     getProfileData();
-
-    favoritePlaces = getFavoritePlaces();
 
     // getCurrentLocation();
   }
@@ -380,104 +362,72 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                       ),
-                      GestureDetector(
-                        onTap: () {
-                          setSearchingAndSource();
-                          _destinationController.text = 'Work';
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 10.0,
-                            horizontal: 20.0,
-                          ),
-                          decoration: BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(
-                                color: Colors.black12,
-                                width: 1,
-                              ),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(right: 15),
-                                child: CircleAvatar(
-                                  backgroundColor: Colors.grey[400],
-                                  foregroundColor: Colors.black,
-                                  child: const Icon(Iconsax.building),
+                      SizedBox(
+                        width: double.infinity,
+                        height: MediaQuery.of(context).size.height * 0.18,
+                        child: Consumer<ProfileProvider>(
+                          builder: (context, value, child) {
+                            var fav = value.getUserData.favoritePlaces;
+
+                            return ListView.builder(
+                              padding: const EdgeInsets.all(0),
+                              itemCount: fav!.length,
+                              itemBuilder: (context, index) => GestureDetector(
+                                onTap: () {
+                                  setSearchingAndSource();
+                                  _destinationController.text =
+                                      fav[index]['givenName'];
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 10.0,
+                                    horizontal: 20.0,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    border: Border(
+                                      bottom: BorderSide(
+                                        color: Colors.black12,
+                                        width: 1,
+                                      ),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(right: 15),
+                                        child: CircleAvatar(
+                                          backgroundColor: Colors.grey[400],
+                                          foregroundColor: Colors.black,
+                                          child: IconList()
+                                              .getList[fav[index]['iconIndex']],
+                                        ),
+                                      ),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            fav[index]['givenName'],
+                                            style: TextStyle(
+                                              fontSize: 18.0,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          Text(
+                                            '${fav[index]['latitude']}, ${fav[index]['longitude']}',
+                                            style: TextStyle(
+                                              fontSize: 12.0,
+                                            ),
+                                          ),
+                                        ],
+                                      )
+                                    ],
+                                  ),
                                 ),
                               ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: const [
-                                  Text(
-                                    'Work',
-                                    style: TextStyle(
-                                      fontSize: 18.0,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  Text(
-                                    '28.278817, 83.960905',
-                                    style: TextStyle(
-                                      fontSize: 12.0,
-                                    ),
-                                  ),
-                                ],
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          setSearchingAndSource();
-                          _destinationController.text = 'Home';
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 10.0,
-                            horizontal: 20.0,
-                          ),
-                          decoration: BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(
-                                color: Colors.black12,
-                                width: 1,
-                              ),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(right: 15),
-                                child: CircleAvatar(
-                                  backgroundColor: Colors.grey[400],
-                                  foregroundColor: Colors.black,
-                                  child: const Icon(Iconsax.home),
-                                ),
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: const [
-                                  Text(
-                                    'Home',
-                                    style: TextStyle(
-                                      fontSize: 18.0,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  Text(
-                                    '28.278817, 83.960905',
-                                    style: TextStyle(
-                                      fontSize: 12.0,
-                                    ),
-                                  ),
-                                ],
-                              )
-                            ],
-                          ),
+                            );
+                          },
                         ),
                       ),
                       Container(

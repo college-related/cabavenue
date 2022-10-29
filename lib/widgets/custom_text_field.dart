@@ -19,6 +19,7 @@ class CustomTextField extends StatefulWidget {
     this.errorMessage = '',
     this.focusNode,
     this.onTap,
+    this.readOnly = false,
   }) : super(key: key);
 
   final TextEditingController controller;
@@ -35,6 +36,7 @@ class CustomTextField extends StatefulWidget {
   final String errorMessage;
   final FocusNode? focusNode;
   final Function? onTap;
+  final bool readOnly;
 
   @override
   State<CustomTextField> createState() => _CustomTextFieldState();
@@ -48,6 +50,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: TextFormField(
+        readOnly: widget.readOnly,
         onTap: widget.onTap != null
             ? () {
                 widget.onTap!();

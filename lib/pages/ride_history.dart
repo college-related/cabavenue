@@ -150,7 +150,7 @@ class _MyRidePageState extends State<MyRidePage> {
   }
 }
 
-// show alert dialouge for confirmation of request rides
+// show alert dialouge for report
 showAlertDialog(BuildContext context, id, name) {
   TextEditingController report = TextEditingController();
   final reportForm = GlobalKey<FormState>();
