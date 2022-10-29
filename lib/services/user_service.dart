@@ -70,6 +70,8 @@ class UserService {
           accessToken: token,
           id: jsonDecode(profile.body)["id"],
           profileUrl: jsonDecode(profile.body)["profileUrl"],
+          rideHistory: jsonDecode(profile.body)["rideHistory"],
+          favoritePlaces: jsonDecode(profile.body)["favoritePlaces"],
         );
 
         const FlutterSecureStorage().write(

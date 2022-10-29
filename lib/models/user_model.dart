@@ -11,6 +11,7 @@ class UserModel {
   String accessToken;
   String profileUrl;
   List? rideHistory = [];
+  List? favoritePlaces = [];
 
   UserModel({
     required this.name,
@@ -23,6 +24,7 @@ class UserModel {
     required this.id,
     required this.profileUrl,
     this.rideHistory,
+    this.favoritePlaces,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> jsonData) {
@@ -37,6 +39,7 @@ class UserModel {
       id: jsonData['id'],
       profileUrl: jsonData['profileUrl'],
       rideHistory: jsonData['rideHistory'],
+      favoritePlaces: jsonData['favoritePlaces'],
     );
   }
 
@@ -51,6 +54,7 @@ class UserModel {
         'name': model.name,
         'profileUrl': model.profileUrl,
         'rideHistory': model.rideHistory,
+        'favoritePlaces': model.favoritePlaces,
       };
 
   static String serialize(UserModel model) =>

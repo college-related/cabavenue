@@ -1,6 +1,8 @@
+import 'package:cabavenue/pages/favorite_map.dart';
 import 'package:cabavenue/pages/favorite_places.dart';
 import 'package:cabavenue/pages/splash_screen.dart';
 import 'package:cabavenue/providers/destination_provider.dart';
+import 'package:cabavenue/providers/favorite_provider.dart';
 import 'package:cabavenue/providers/profile_provider.dart';
 import 'package:cabavenue/utils/theme.dart';
 import 'package:flutter/material.dart';
@@ -26,6 +28,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (context) => ProfileProvider()),
         ChangeNotifierProvider(create: (context) => DestinationProvider()),
+        ChangeNotifierProvider(create: (context) => FavoriteProvider()),
       ],
       child: MaterialApp(
         title: 'Flutter Demo',
@@ -39,6 +42,7 @@ class MyApp extends StatelessWidget {
           '/emergency': (context) => const EmergencyPage(),
           '/auth': (context) => const AuthPage(),
           '/favorite-places': (context) => const FavoritePlaces(),
+          '/favorite-map': (context) => const FavoriteMap(),
         },
         // home: const MyHomePage(),
       ),
