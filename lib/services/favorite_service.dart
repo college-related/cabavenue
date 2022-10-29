@@ -27,7 +27,7 @@ class FavoriteService {
         if (value.statusCode == 200) {
           return jsonDecode(value.body);
         } else if (value.statusCode == 401 &&
-            jsonDecode(value.body)['message'] == 'Please Authenticate') {
+            jsonDecode(value.body)['message'] == 'Please authenticate') {
           Navigator.of(context)
               .pushNamedAndRemoveUntil('/auth', (route) => false);
           Fluttertoast.showToast(
