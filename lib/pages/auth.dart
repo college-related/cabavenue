@@ -265,10 +265,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
             TextButton(
-              onPressed: () {},
-              child: const Text('Forgot Password?'),
-            ),
-            TextButton(
               onPressed: () {
                 widget.callback();
               },
