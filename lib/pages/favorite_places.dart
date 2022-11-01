@@ -161,7 +161,6 @@ showAlertDialogEditDelete(
               .getFavoritePlace
               .longitude,
           givenNameController.text,
-          givenNameController.text,
         );
       }
       // Future.delayed(const Duration(seconds: 3), () {

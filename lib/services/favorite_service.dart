@@ -125,7 +125,6 @@ class FavoriteService {
     int iconIndex,
     double latitude,
     double longitude,
-    String name,
     String givenName,
   ) async {
     String token = await _tokenService.getToken();
@@ -133,7 +132,6 @@ class FavoriteService {
 
     try {
       var place = {
-        'name': name,
         'givenName': givenName,
         'latitude': latitude,
         'longitude': longitude,
@@ -206,7 +204,6 @@ class FavoriteService {
     int iconIndex,
     double latitude,
     double longitude,
-    String name,
     String givenName,
   ) async {
     String token = await _tokenService.getToken();
@@ -214,7 +211,6 @@ class FavoriteService {
 
     try {
       var place = {
-        'name': name,
         'givenName': givenName,
         'latitude': latitude,
         'longitude': longitude,

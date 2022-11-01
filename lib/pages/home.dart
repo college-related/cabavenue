@@ -1,7 +1,8 @@
-// ignore_for_file: prefer_const_constructors, depend_on_referenced_packages
+// ignore_for_file: prefer_const_constructors, depend_on_referenced_packages, use_build_context_synchronously
 import 'package:cabavenue/models/user_model.dart';
 import 'package:cabavenue/providers/destination_provider.dart';
 import 'package:cabavenue/providers/profile_provider.dart';
+import 'package:cabavenue/services/notifaction_service.dart';
 import 'package:cabavenue/services/ride_service.dart';
 import 'package:cabavenue/utils/icon_list.dart';
 import 'package:cabavenue/widgets/accepted_container.dart';
@@ -44,6 +45,7 @@ class _HomePageState extends State<HomePage> {
 
   final TextEditingController _destinationController = TextEditingController();
   final RideService _rideService = RideService();
+  final NotificationService _notificationService = NotificationService();
   dynamic sourceLocation;
   // dynamic destinationLocation;
   List drivers = [];
@@ -174,6 +176,12 @@ class _HomePageState extends State<HomePage> {
       Provider.of<DestinationProvider>(context, listen: false).getDestination,
       sourceLocation,
       price,
+    );
+    await _notificationService.sendRideRequestNotification(
+      context,
+      id,
+      'New ride request',
+      'Someone has request a ride',
     );
   }
 
@@ -375,6 +383,14 @@ class _HomePageState extends State<HomePage> {
                               itemBuilder: (context, index) => GestureDetector(
                                 onTap: () {
                                   setSearchingAndSource();
+                                  Provider.of<DestinationProvider>(
+                                    context,
+                                    listen: false,
+                                  ).setDestination({
+                                    "name": fav[index]['name'],
+                                    "latitude": fav[index]['latitude'],
+                                    "longitude": fav[index]['longitude'],
+                                  });
                                   _destinationController.text =
                                       fav[index]['givenName'];
                                 },

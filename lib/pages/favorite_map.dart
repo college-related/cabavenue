@@ -156,7 +156,6 @@ class _FavoriteMapState extends State<FavoriteMap> {
                                     latitude,
                                     longitude,
                                     nameController.text,
-                                    nameController.text,
                                   );
                                 } else {
                                   Provider.of<FavoriteProvider>(context,
