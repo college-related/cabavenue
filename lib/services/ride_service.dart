@@ -65,7 +65,7 @@ class RideService {
           'Authorization': 'Bearer $token',
         },
       ).then((value) {
-        if (value.statusCode == 200) {
+        if (value.statusCode == 201) {
           return jsonDecode(value.body);
         } else {
           httpErrorHandle(response: value, context: context, onSuccess: () {});
@@ -78,6 +78,27 @@ class RideService {
       // ignore: use_build_context_synchronously
       showSnackBar(context, e.toString(), true);
       return [];
+    }
+  }
+
+  void cancelRequest(BuildContext context, String id) async {
+    String token = await _tokenService.getToken();
+
+    try {
+      await http.delete(
+        Uri.parse('http://$url/v1/rides/$id'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $token',
+        },
+      ).then((value) {
+        if (value.statusCode == 500) {
+          httpErrorHandle(response: value, context: context, onSuccess: () {});
+        }
+      });
+    } catch (e) {
+      // ignore: use_build_context_synchronously
+      showSnackBar(context, e.toString(), true);
     }
   }
 }
