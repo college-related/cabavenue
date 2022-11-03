@@ -38,6 +38,9 @@ dependencies:
   location: ^4.4.0
   flutter_phone_direct_caller: ^2.1.1
   liquid_pull_to_refresh: ^3.0.1
+  firebase_core: ^2.1.1
+  firebase_messaging: ^14.0.3
+  flutter_local_notifications: ^12.0.3
 
 dev_dependencies:
   flutter_test:
