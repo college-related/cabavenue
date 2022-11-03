@@ -117,6 +117,9 @@ class _PlaceSearchTextFieldState extends State<PlaceSearchTextField> {
                           onPressed: () {
                             widget.destinationNode.requestFocus();
                             clearField();
+                            Provider.of<DestinationProvider>(context,
+                                    listen: false)
+                                .setDestination(null);
                           },
                           icon: const Icon(Iconsax.close_circle),
                         ),

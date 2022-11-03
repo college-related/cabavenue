@@ -2,6 +2,7 @@
 import 'package:cabavenue/models/user_model.dart';
 import 'package:cabavenue/providers/destination_provider.dart';
 import 'package:cabavenue/providers/profile_provider.dart';
+import 'package:cabavenue/providers/ride_provider.dart';
 import 'package:cabavenue/services/notifaction_service.dart';
 import 'package:cabavenue/services/ride_service.dart';
 import 'package:cabavenue/utils/icon_list.dart';
@@ -77,8 +78,6 @@ class _HomePageState extends State<HomePage> {
           .read(key: "CABAVENUE_USERDATA_PASSENGER");
       if (u != null) {
         UserModel user = await UserModel.deserialize(u);
-
-        // ignore: use_build_context_synchronously
         Provider.of<ProfileProvider>(context, listen: false).setUserData(user);
       }
     }
@@ -170,18 +169,30 @@ class _HomePageState extends State<HomePage> {
   }
 
   requestCab(BuildContext context, String id) async {
-    await _rideService.requestRide(
+    var ride = await _rideService.requestRide(
       context,
       id,
       Provider.of<DestinationProvider>(context, listen: false).getDestination,
       sourceLocation,
       price,
     );
+    Provider.of<RideProvider>(context, listen: false).setRide(ride);
     await _notificationService.sendRideRequestNotification(
       context,
       id,
       'New ride request',
       'Someone has request a ride',
+    );
+  }
+
+  cancelRequest(BuildContext context, String id, String driverId) async {
+    _rideService.cancelRequest(context, id);
+    Provider.of<RideProvider>(context, listen: false).setRide({});
+    await _notificationService.sendRideRequestNotification(
+      context,
+      driverId,
+      'Ride request cancel',
+      'A ride request has been cancelled',
     );
   }
 
@@ -507,9 +518,19 @@ class _HomePageState extends State<HomePage> {
                   child: Form(
                     key: _rideRequestFormKey,
                     child: _isRequesting
-                        ? RequestingContainer(
-                            callback: () =>
-                                setRestFormBools(false, 'requesting'),
+                        ? Consumer<RideProvider>(
+                            builder: (context, value, child) =>
+                                RequestingContainer(
+                              callback: () {
+                                var ride = value.getRide;
+                                cancelRequest(
+                                  context,
+                                  ride['_id'].toString(),
+                                  ride['driver'],
+                                );
+                                setRestFormBools(false, 'requesting');
+                              },
+                            ),
                           )
                         : _isAccepted
                             ? AcceptedContainer(
@@ -517,24 +538,39 @@ class _HomePageState extends State<HomePage> {
                                   setRestFormBools(false, 'accept');
                                   setRestFormBools(false, 'searching');
                                   setRestFormBools(false, 'destination');
+                                  Provider.of<DestinationProvider>(context,
+                                          listen: false)
+                                      .setDestination(null);
                                 },
                               )
                             : _isDestinationSet
-                                ? RideList(
-                                    callback: () =>
-                                        setRestFormBools(true, 'requesting'),
-                                    callback2: () =>
-                                        setRestFormBools(false, 'destination'),
-                                    request: requestCab,
-                                    drivers: drivers,
-                                    price: price,
+                                ? Consumer<RideProvider>(
+                                    builder: (context, value, child) =>
+                                        RideList(
+                                      callback: () =>
+                                          setRestFormBools(true, 'requesting'),
+                                      callback2: () {
+                                        setRestFormBools(false, 'destination');
+                                        Provider.of<DestinationProvider>(
+                                                context,
+                                                listen: false)
+                                            .setDestination(null);
+                                      },
+                                      request: requestCab,
+                                      drivers: drivers,
+                                      price: price,
+                                    ),
                                   )
                                 : PlaceSearchTextField(
                                     isSearching: _isSearching,
                                     destinationController:
                                         _destinationController,
-                                    callback: () =>
-                                        setRestFormBools(false, 'searching'),
+                                    callback: () {
+                                      setRestFormBools(false, 'searching');
+                                      Provider.of<DestinationProvider>(context,
+                                              listen: false)
+                                          .setDestination(null);
+                                    },
                                     callback2: () async {
                                       await searchRides();
                                       setRestFormBools(true, 'destination');
