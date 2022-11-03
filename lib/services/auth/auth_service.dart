@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:cabavenue/helpers/error_handler.dart';
 import 'package:cabavenue/helpers/snackbar.dart';
 import 'package:cabavenue/models/user_model.dart';
+import 'package:cabavenue/providers/device_provider.dart';
 import 'package:cabavenue/providers/profile_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -67,6 +68,7 @@ class AuthService {
           );
           Provider.of<ProfileProvider>(context, listen: false)
               .setUserData(user);
+          Provider.of<DeviceProvider>(context, listen: false).update(context);
           Navigator.of(context)
               .pushNamedAndRemoveUntil('/home', (route) => false);
         },
@@ -122,6 +124,8 @@ class AuthService {
           );
           Provider.of<ProfileProvider>(context, listen: false)
               .setUserData(user);
+          Provider.of<DeviceProvider>(context, listen: false).update(context);
+
           Navigator.of(context)
               .pushNamedAndRemoveUntil('/home', (route) => false);
         },

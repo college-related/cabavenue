@@ -1,3 +1,5 @@
+import 'package:cabavenue/main.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -13,18 +15,21 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _checkUserAuth().then((value) => {
-          if (value != null)
-            {
-              Navigator.of(context)
-                  .pushNamedAndRemoveUntil('/home', (route) => false)
-            }
-          else
-            {
-              Navigator.of(context)
-                  .pushNamedAndRemoveUntil('/auth', (route) => false)
-            }
-        });
+    _checkUserAuth().then((value) {
+      if (value != null) {
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil('/home', (route) => false);
+      } else {
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil('/auth', (route) => false);
+      }
+    });
+
+    FirebaseMessaging.onMessage.listen(showFlutterNotification);
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      Navigator.pushNamed(context, '/home');
+    });
   }
 
   Future _checkUserAuth() async {
