@@ -120,7 +120,7 @@ class FavoriteService {
     }
   }
 
-  void addFavorite(
+  Future<void> addFavorite(
     BuildContext context,
     int iconIndex,
     double latitude,

@@ -24,110 +24,110 @@ class _FavoritePlacesState extends State<FavoritePlaces> {
         title: const Text('Favourite Places'),
         elevation: 2,
       ),
-      body: SingleChildScrollView(
-        child: SafeArea(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        primary: Colors.black,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(25)),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 12,
-                          horizontal: 50.0,
-                        ),
-                      ),
-                      onPressed: () {
-                        showAlertForIcon(context, forNew: true);
-                      },
-                      child: const Text(
-                        "Add new place",
-                        style: TextStyle(
-                            fontSize: 14,
-                            letterSpacing: 2.2,
-                            color: Colors.white),
-                      ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.black,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(25)),
                     ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 20.0),
-                child: Text(
-                  'Your favorite places',
-                  style: Theme.of(context).textTheme.displaySmall,
-                ),
-              ),
-              Consumer<ProfileProvider>(
-                builder: (context, value, child) {
-                  var favorite = value.getUserData.favoritePlaces;
-                  return SizedBox(
-                    width: double.infinity,
-                    height: MediaQuery.of(context).size.height * 0.6,
-                    child: ListView.builder(
-                      itemCount: favorite!.length,
-                      itemBuilder: (context, index) {
-                        return ListTile(
-                          leading: IconList().getList[value
-                              .getUserData.favoritePlaces![index]['iconIndex']],
-                          title: Text(favorite[index]['givenName']),
-                          subtitle: Text(
-                            '${favorite[index]['latitude']}, ${favorite[index]['longitude']}',
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                onPressed: () {
-                                  Provider.of<FavoriteProvider>(context,
-                                          listen: false)
-                                      .setIconIndex(
-                                    favorite[index]['iconIndex'],
-                                  );
-                                  Provider.of<FavoriteProvider>(context,
-                                          listen: false)
-                                      .setLatLng(favorite[index]['latitude'],
-                                          favorite[index]['longitude']);
-                                  showAlertDialogEditDelete(
-                                    context,
-                                    favorite[index],
-                                    'Edit',
-                                  );
-                                },
-                                icon: const Icon(Iconsax.edit),
-                              ),
-                              IconButton(
-                                onPressed: () {
-                                  showAlertDialogEditDelete(
-                                    context,
-                                    favorite[index],
-                                    'delete',
-                                  );
-                                },
-                                icon: const Icon(Iconsax.trash),
-                              ),
-                            ],
-                          ),
-                          tileColor:
-                              index % 2 != 0 ? Colors.white : Colors.teal[100],
-                        );
-                      },
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 50.0,
                     ),
-                  );
-                },
-              ),
-            ],
+                  ),
+                  onPressed: () {
+                    showAlertForIcon(context, forNew: true);
+                  },
+                  child: const Text(
+                    "Add new place",
+                    style: TextStyle(
+                        fontSize: 14, letterSpacing: 2.2, color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
+          Container(
+            width: double.infinity,
+            color: Colors.white,
+            padding: const EdgeInsets.only(bottom: 20.0),
+            child: Center(
+              child: Text(
+                'Your favorite places',
+                style: Theme.of(context).textTheme.displaySmall,
+              ),
+            ),
+          ),
+          Consumer<ProfileProvider>(
+            builder: (context, value, child) {
+              var favorite = value.getUserData.favoritePlaces;
+              return SizedBox(
+                width: double.infinity,
+                height: MediaQuery.of(context).size.height * 0.65,
+                child: ListView.builder(
+                  itemCount: favorite!.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      leading: IconList().getList[value
+                          .getUserData.favoritePlaces![index]['iconIndex']],
+                      title: Text(favorite[index]['givenName']),
+                      subtitle: Text(
+                        '${favorite[index]['latitude']}, ${favorite[index]['longitude']}',
+                      ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              Provider.of<FavoriteProvider>(context,
+                                      listen: false)
+                                  .setIconIndex(
+                                favorite[index]['iconIndex'],
+                              );
+                              Provider.of<FavoriteProvider>(context,
+                                      listen: false)
+                                  .setLatLng(favorite[index]['latitude'],
+                                      favorite[index]['longitude']);
+                              showAlertDialogEditDelete(
+                                context,
+                                favorite[index],
+                                'Edit',
+                              );
+                            },
+                            icon: const Icon(Iconsax.edit),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              showAlertDialogEditDelete(
+                                context,
+                                favorite[index],
+                                'delete',
+                              );
+                            },
+                            icon: const Icon(Iconsax.trash),
+                          ),
+                        ],
+                      ),
+                      tileColor:
+                          index % 2 != 0 ? Colors.white : Colors.teal[100],
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -294,7 +294,7 @@ showAlertForIcon(BuildContext context, {bool forNew = false}) {
               if (forNew) {
                 Provider.of<FavoriteProvider>(context, listen: false)
                     .setIsEdit(false);
-                Navigator.of(context).pushNamed('/favorite-map');
+                Navigator.of(context).popAndPushNamed('/favorite-map');
               } else {
                 Navigator.of(context).pop();
               }

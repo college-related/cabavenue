@@ -159,6 +159,8 @@ class _HomePageState extends State<HomePage> {
       context,
       currentLocation!.latitude.toString(),
       currentLocation!.longitude.toString(),
+      sourceLocation,
+      Provider.of<DestinationProvider>(context, listen: false).getDestination,
     );
 
     setState(() {

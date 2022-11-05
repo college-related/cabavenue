@@ -150,19 +150,23 @@ class _FavoriteMapState extends State<FavoriteMap> {
                             onPressed: () {
                               if (favKey.currentState!.validate()) {
                                 if (!value.isEdit) {
-                                  FavoriteService().addFavorite(
+                                  FavoriteService()
+                                      .addFavorite(
                                     context,
                                     value.getFavoritePlace.iconIndex,
                                     latitude,
                                     longitude,
                                     nameController.text,
-                                  );
+                                  )
+                                      .then((value) {
+                                    Navigator.of(context).pop();
+                                  });
                                 } else {
                                   Provider.of<FavoriteProvider>(context,
                                           listen: false)
                                       .setLatLng(latitude, longitude);
+                                  Navigator.of(context).pop();
                                 }
-                                Navigator.of(context).pop();
                               }
                             },
                             child: Row(
