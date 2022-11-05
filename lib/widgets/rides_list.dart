@@ -47,7 +47,7 @@ class _RideListState extends State<RideList> {
                 style: Theme.of(context).textTheme.headline6,
               ),
               Text(
-                'Rs. ${widget.price}',
+                'Rs. ${num.parse(widget.price).toStringAsFixed(2)}',
                 style: Theme.of(context).textTheme.headline6,
               ),
             ],

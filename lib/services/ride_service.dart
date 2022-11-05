@@ -11,12 +11,24 @@ class RideService {
   String? url = dotenv.env['BACKEND_URL_WITH_PORT'];
   final TokenService _tokenService = TokenService();
 
-  dynamic searchRides(BuildContext context, String lat, String lng) async {
+  dynamic searchRides(
+    BuildContext context,
+    String lat,
+    String lng,
+    dynamic source,
+    dynamic destination,
+  ) async {
     String token = await _tokenService.getToken();
 
     try {
-      var places = await http.get(
+      var ride = {
+        'source': source,
+        'destination': destination,
+      };
+
+      var places = await http.post(
         Uri.parse('http://$url/v1/rides/$lat/$lng'),
+        body: jsonEncode(ride),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': 'Bearer $token',
