@@ -78,7 +78,11 @@ class _MyRidePageState extends State<MyRidePage> {
                                   'Pickup point',
                                   style: Theme.of(context).textTheme.subtitle1,
                                 ),
-                                Text(history[index]['source']),
+                                SizedBox(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.35,
+                                  child: Text(history[index]['source']),
+                                ),
                               ],
                             )
                           ],
@@ -101,7 +105,11 @@ class _MyRidePageState extends State<MyRidePage> {
                                   'Destination',
                                   style: Theme.of(context).textTheme.subtitle1,
                                 ),
-                                Text(history[index]['destination']),
+                                SizedBox(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.35,
+                                  child: Text(history[index]['destination']),
+                                ),
                               ],
                             )
                           ],
