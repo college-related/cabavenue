@@ -22,7 +22,6 @@ import 'package:provider/provider.dart';
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   await setupFlutterNotifications();
-  showFlutterNotification(message);
 }
 
 late AndroidNotificationChannel channel;
@@ -70,7 +69,7 @@ void showFlutterNotification(RemoteMessage message) {
           channel.id,
           channel.name,
           channelDescription: channel.description,
-          icon: 'launch_background',
+          icon: '@mipmap/ic_launcher',
         ),
       ),
     );

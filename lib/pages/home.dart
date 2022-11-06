@@ -1,4 +1,5 @@
 // ignore_for_file: prefer_const_constructors, depend_on_referenced_packages, use_build_context_synchronously
+import 'package:cabavenue/main.dart';
 import 'package:cabavenue/models/user_model.dart';
 import 'package:cabavenue/providers/destination_provider.dart';
 import 'package:cabavenue/providers/profile_provider.dart';
@@ -12,6 +13,7 @@ import 'package:cabavenue/widgets/home/drawer.dart';
 import 'package:cabavenue/widgets/place_search_field.dart';
 import 'package:cabavenue/widgets/requesting_container.dart';
 import 'package:cabavenue/widgets/rides_list.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -95,7 +97,42 @@ class _HomePageState extends State<HomePage> {
     myFocusNode = FocusNode();
     getProfileData();
 
+    if (Provider.of<ProfileProvider>(context, listen: false)
+        .getUserData
+        .isInRide) {
+      setState(() {
+        _isAccepted = true;
+      });
+    }
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      handleNotification(message);
+    });
+
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      handleNotification(message);
+    });
     // getCurrentLocation();
+  }
+
+  handleNotification(RemoteMessage message) {
+    if (message.notification!.title == 'Request Accepted') {
+      Fluttertoast.showToast(
+        msg: 'Your ride is accpeted',
+        backgroundColor: Colors.green[600],
+      );
+    } else {
+      Fluttertoast.showToast(
+        msg: 'Your ride has been rejected',
+        backgroundColor: Colors.red[600],
+      );
+    }
+    setState(() {
+      if (message.notification!.title == 'Request Accepted') {
+        _isAccepted = true;
+      }
+      _isRequesting = false;
+    });
   }
 
   @override
@@ -519,31 +556,32 @@ class _HomePageState extends State<HomePage> {
                   ),
                   child: Form(
                     key: _rideRequestFormKey,
-                    child: _isRequesting
-                        ? Consumer<RideProvider>(
-                            builder: (context, value, child) =>
-                                RequestingContainer(
-                              callback: () {
-                                var ride = value.getRide;
-                                cancelRequest(
-                                  context,
-                                  ride['_id'].toString(),
-                                  ride['driver'],
-                                );
-                                setRestFormBools(false, 'requesting');
-                              },
-                            ),
+                    child: _isAccepted
+                        ? AcceptedContainer(
+                            callback: () {
+                              setRestFormBools(false, 'accept');
+                              setRestFormBools(false, 'searching');
+                              setRestFormBools(false, 'destination');
+                              setRestFormBools(false, 'requesting');
+                              Provider.of<DestinationProvider>(context,
+                                      listen: false)
+                                  .setDestination(null);
+                            },
                           )
-                        : _isAccepted
-                            ? AcceptedContainer(
-                                callback: () {
-                                  setRestFormBools(false, 'accept');
-                                  setRestFormBools(false, 'searching');
-                                  setRestFormBools(false, 'destination');
-                                  Provider.of<DestinationProvider>(context,
-                                          listen: false)
-                                      .setDestination(null);
-                                },
+                        : _isRequesting
+                            ? Consumer<RideProvider>(
+                                builder: (context, value, child) =>
+                                    RequestingContainer(
+                                  callback: () {
+                                    var ride = value.getRide;
+                                    cancelRequest(
+                                      context,
+                                      ride['_id'].toString(),
+                                      ride['driver'],
+                                    );
+                                    setRestFormBools(false, 'requesting');
+                                  },
+                                ),
                               )
                             : _isDestinationSet
                                 ? Consumer<RideProvider>(
