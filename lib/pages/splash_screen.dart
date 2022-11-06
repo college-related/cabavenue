@@ -1,7 +1,6 @@
-import 'package:cabavenue/main.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:quick_actions/quick_actions.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -11,6 +10,8 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  String quickActionType = '';
+
   final _storage = const FlutterSecureStorage();
   @override
   void initState() {
@@ -25,11 +26,27 @@ class _SplashScreenState extends State<SplashScreen> {
       }
     });
 
-    FirebaseMessaging.onMessage.listen(showFlutterNotification);
-
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      Navigator.pushNamed(context, '/home');
+    const QuickActions quickActions = QuickActions();
+    quickActions.initialize((String type) {
+      // setState(() {
+      //   if (type != '') {
+      //     quickActionType = type;
+      //   }
+      // });
+      switch (type) {
+        case 'emergency':
+          Navigator.of(context).pushNamed('/emergency');
+          break;
+        default:
+      }
     });
+    quickActions.setShortcutItems(<ShortcutItem>[
+      const ShortcutItem(
+        type: 'emergency',
+        localizedTitle: 'Emergency',
+        icon: 'ic_launcher',
+      ),
+    ]);
   }
 
   Future _checkUserAuth() async {
