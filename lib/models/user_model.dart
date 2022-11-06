@@ -12,6 +12,7 @@ class UserModel {
   String profileUrl;
   List? rideHistory = [];
   List? favoritePlaces = [];
+  bool isInRide;
 
   UserModel({
     required this.name,
@@ -23,6 +24,7 @@ class UserModel {
     required this.accessToken,
     required this.id,
     required this.profileUrl,
+    required this.isInRide,
     this.rideHistory,
     this.favoritePlaces,
   });
@@ -40,6 +42,7 @@ class UserModel {
       profileUrl: jsonData['profileUrl'],
       rideHistory: jsonData['rideHistory'],
       favoritePlaces: jsonData['favoritePlaces'],
+      isInRide: jsonData['isInRide'],
     );
   }
 
@@ -55,6 +58,7 @@ class UserModel {
         'profileUrl': model.profileUrl,
         'rideHistory': model.rideHistory,
         'favoritePlaces': model.favoritePlaces,
+        'isInRide': model.isInRide,
       };
 
   static String serialize(UserModel model) =>

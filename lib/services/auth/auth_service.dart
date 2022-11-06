@@ -57,6 +57,7 @@ class AuthService {
             profileUrl: jsonDecode(res.body)["user"]["profileUrl"],
             rideHistory: jsonDecode(res.body)["user"]["rideHistory"],
             favoritePlaces: jsonDecode(res.body)["user"]["favoritePlaces"],
+            isInRide: jsonDecode(res.body)["user"]["isInRide"],
           );
           const FlutterSecureStorage().write(
             key: "CABAVENUE_USERDATA_PASSENGER",
@@ -113,6 +114,7 @@ class AuthService {
             profileUrl: jsonDecode(res.body)["user"]["profileUrl"],
             rideHistory: jsonDecode(res.body)["user"]["rideHistory"],
             favoritePlaces: jsonDecode(res.body)["user"]["favoritePlaces"],
+            isInRide: jsonDecode(res.body)["user"]["isInRide"],
           );
           const FlutterSecureStorage().write(
             key: "CABAVENUE_USERDATA_PASSENGER",

@@ -98,6 +98,7 @@ class FavoriteService {
           profileUrl: jsonDecode(favoritePlaces.body)["profileUrl"],
           rideHistory: jsonDecode(favoritePlaces.body)["rideHistory"],
           favoritePlaces: jsonDecode(favoritePlaces.body)["favoritePlaces"],
+          isInRide: jsonDecode(favoritePlaces.body)["user"]["isInRide"],
         );
 
         const FlutterSecureStorage().write(
@@ -176,6 +177,7 @@ class FavoriteService {
           profileUrl: jsonDecode(favoritePlaces.body)["profileUrl"],
           rideHistory: jsonDecode(favoritePlaces.body)["rideHistory"],
           favoritePlaces: jsonDecode(favoritePlaces.body)["favoritePlaces"],
+          isInRide: jsonDecode(favoritePlaces.body)["user"]["isInRide"],
         );
 
         const FlutterSecureStorage().write(
@@ -256,6 +258,7 @@ class FavoriteService {
           profileUrl: jsonDecode(favoritePlaces.body)["profileUrl"],
           rideHistory: jsonDecode(favoritePlaces.body)["rideHistory"],
           favoritePlaces: jsonDecode(favoritePlaces.body)["favoritePlaces"],
+          isInRide: jsonDecode(favoritePlaces.body)["user"]["isInRide"],
         );
 
         const FlutterSecureStorage().write(
