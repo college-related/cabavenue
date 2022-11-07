@@ -1,5 +1,6 @@
 import 'package:cabavenue/models/user_model.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ProfileProvider with ChangeNotifier {
   UserModel user = UserModel(
@@ -32,6 +33,15 @@ class ProfileProvider with ChangeNotifier {
 
   void setUserData(UserModel newUser) {
     user = newUser;
+    notifyListeners();
+  }
+
+  void setInRide(bool inRide) async {
+    user.isInRide = inRide;
+    await const FlutterSecureStorage().write(
+      key: "CABAVENUE_USERDATA_PASSENGER",
+      value: UserModel.serialize(user),
+    );
     notifyListeners();
   }
 }

@@ -111,8 +111,17 @@ class _RideListState extends State<RideList> {
                             ),
                           ),
                           onPressed: () async {
-                            await widget.request(
-                                context, widget.drivers[index]['id']);
+                            await widget
+                                .request(context, widget.drivers[index]['id'], {
+                              'name': widget.drivers[index]['name'],
+                              'model': widget.drivers[index]['vehicle']
+                                  ['model'],
+                              'color': widget.drivers[index]['vehicle']
+                                  ['color'],
+                              'plateNumber': widget.drivers[index]['vehicle']
+                                  ['plateNumber'],
+                              'phoneNumber': widget.drivers[index]['phone'],
+                            });
                             widget.callback();
                           },
                           child: const Text(

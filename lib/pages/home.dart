@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_constructors, depend_on_referenced_packages, use_build_context_synchronously
-import 'package:cabavenue/main.dart';
+import 'dart:convert';
+
 import 'package:cabavenue/models/user_model.dart';
 import 'package:cabavenue/providers/destination_provider.dart';
 import 'package:cabavenue/providers/profile_provider.dart';
@@ -22,6 +23,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart';
 import 'package:provider/provider.dart';
+import 'package:smooth_star_rating_nsafe/smooth_star_rating.dart';
 import 'package:vector_map_tiles/vector_map_tiles.dart';
 import 'package:vector_tile_renderer/vector_tile_renderer.dart' as vector_theme;
 
@@ -40,7 +42,8 @@ class _HomePageState extends State<HomePage> {
   bool _isSearching = false,
       _isDestinationSet = false,
       _isRequesting = false,
-      _isAccepted = false;
+      _isAccepted = false,
+      _settingRating = false;
   DateTime? currentBackPressTime;
 
   final MapController _mapController = MapController();
@@ -53,6 +56,7 @@ class _HomePageState extends State<HomePage> {
   // dynamic destinationLocation;
   List drivers = [];
   String price = '';
+  double rating = 0;
 
   void getCurrentLocation() async {
     Location location = Location();
@@ -96,14 +100,7 @@ class _HomePageState extends State<HomePage> {
     getInitialLocation();
     myFocusNode = FocusNode();
     getProfileData();
-
-    if (Provider.of<ProfileProvider>(context, listen: false)
-        .getUserData
-        .isInRide) {
-      setState(() {
-        _isAccepted = true;
-      });
-    }
+    checkInRide();
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       handleNotification(message);
@@ -115,21 +112,53 @@ class _HomePageState extends State<HomePage> {
     // getCurrentLocation();
   }
 
+  checkInRide() async {
+    var user =
+        await FlutterSecureStorage().read(key: "CABAVENUE_USERDATA_PASSENGER");
+    if (jsonDecode(user.toString())['isInRide']) {
+      var data = await _rideService.currentRide(context);
+
+      Provider.of<RideProvider>(context, listen: false).setRide(data['ride']);
+      Provider.of<RideProvider>(context, listen: false)
+          .setDriver(data['driver']);
+      Provider.of<DestinationProvider>(context, listen: false)
+          .setDestination(data['destination']);
+      setState(() {
+        _isSearching = true;
+        _isAccepted = true;
+      });
+    }
+  }
+
   handleNotification(RemoteMessage message) {
     if (message.notification!.title == 'Request Accepted') {
+      Provider.of<ProfileProvider>(context, listen: false).setInRide(true);
       Fluttertoast.showToast(
         msg: 'Your ride is accpeted',
         backgroundColor: Colors.green[600],
       );
-    } else {
+    } else if (message.notification!.title == 'Request Cancelled') {
       Fluttertoast.showToast(
         msg: 'Your ride has been rejected',
         backgroundColor: Colors.red[600],
+      );
+    } else {
+      Provider.of<ProfileProvider>(context, listen: false).setInRide(false);
+      Fluttertoast.showToast(
+        msg: 'Your ride has been completed',
+        backgroundColor: Colors.green[600],
       );
     }
     setState(() {
       if (message.notification!.title == 'Request Accepted') {
         _isAccepted = true;
+      }
+      if (message.notification!.title == 'Ride Completed') {
+        _isAccepted = false;
+        _isSearching = false;
+        _isDestinationSet = false;
+        _settingRating = true;
+        rating = 0;
       }
       _isRequesting = false;
     });
@@ -207,7 +236,7 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  requestCab(BuildContext context, String id) async {
+  requestCab(BuildContext context, String id, dynamic driver) async {
     var ride = await _rideService.requestRide(
       context,
       id,
@@ -216,6 +245,13 @@ class _HomePageState extends State<HomePage> {
       price,
     );
     Provider.of<RideProvider>(context, listen: false).setRide(ride);
+    Provider.of<RideProvider>(context, listen: false).setDriver({
+      'name': driver['name'],
+      'model': driver['model'],
+      'color': driver['color'],
+      'plateNumber': driver['plateNumber'],
+      'phoneNumber': driver['phone'],
+    });
     await _notificationService.sendRideRequestNotification(
       context,
       id,
@@ -232,6 +268,20 @@ class _HomePageState extends State<HomePage> {
       driverId,
       'Ride request cancel',
       'A ride request has been cancelled',
+    );
+  }
+
+  rateRide(BuildContext context, String id, String driverId) async {
+    _rideService.rateRide(context, id, rating);
+    Provider.of<DestinationProvider>(context, listen: false)
+        .setDestination(null);
+    Provider.of<RideProvider>(context, listen: false).setRide({});
+    Provider.of<RideProvider>(context, listen: false).setDriver({});
+    await _notificationService.sendRideRequestNotification(
+      context,
+      driverId,
+      'Rating',
+      'You got a rating of $rating from recent ride',
     );
   }
 
@@ -349,16 +399,18 @@ class _HomePageState extends State<HomePage> {
                   Navigator.pushNamed(context, '/emergency');
                 },
               ),
-              CustomFAB(
-                bgColor: Colors.blueAccent,
-                icon: Icon(Iconsax.menu5),
-                herotag: 'drawer',
-                left: 10,
-                top: MediaQuery.of(context).size.height * 0.08,
-                onClick: () {
-                  _key.currentState!.openDrawer();
-                },
-              ),
+              !_isAccepted
+                  ? CustomFAB(
+                      bgColor: Colors.blueAccent,
+                      icon: Icon(Iconsax.menu5),
+                      herotag: 'drawer',
+                      left: 10,
+                      top: MediaQuery.of(context).size.height * 0.08,
+                      onClick: () {
+                        _key.currentState!.openDrawer();
+                      },
+                    )
+                  : Container(),
               Align(
                 alignment: Alignment.bottomCenter,
                 child: Container(
@@ -557,17 +609,7 @@ class _HomePageState extends State<HomePage> {
                   child: Form(
                     key: _rideRequestFormKey,
                     child: _isAccepted
-                        ? AcceptedContainer(
-                            callback: () {
-                              setRestFormBools(false, 'accept');
-                              setRestFormBools(false, 'searching');
-                              setRestFormBools(false, 'destination');
-                              setRestFormBools(false, 'requesting');
-                              Provider.of<DestinationProvider>(context,
-                                      listen: false)
-                                  .setDestination(null);
-                            },
-                          )
+                        ? AcceptedContainer()
                         : _isRequesting
                             ? Consumer<RideProvider>(
                                 builder: (context, value, child) =>
@@ -621,6 +663,124 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ),
+              _settingRating
+                  ? Container(
+                      width: double.infinity,
+                      height: double.infinity,
+                      color: Colors.black26,
+                    )
+                  : Container(),
+              _settingRating
+                  ? Consumer<RideProvider>(
+                      builder: (context, value, child) => Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 8.0,
+                            horizontal: 20,
+                          ),
+                          margin: const EdgeInsets.symmetric(
+                            vertical: 30,
+                            horizontal: 20,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black38.withOpacity(0.2),
+                                spreadRadius: 5,
+                                blurRadius: 7,
+                                offset: const Offset(0, -1),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Align(
+                                alignment: Alignment.topRight,
+                                child: IconButton(
+                                  onPressed: () {
+                                    Provider.of<DestinationProvider>(context,
+                                            listen: false)
+                                        .setDestination(null);
+                                    Provider.of<RideProvider>(context,
+                                            listen: false)
+                                        .setRide({});
+                                    Provider.of<RideProvider>(context,
+                                            listen: false)
+                                        .setDriver({});
+                                    setState(() {
+                                      _settingRating = false;
+                                      rating = 0;
+                                    });
+                                  },
+                                  icon: Icon(Iconsax.close_circle),
+                                  iconSize: 45,
+                                ),
+                              ),
+                              Text(
+                                'Rate your recent ride',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 20),
+                                child: SmoothStarRating(
+                                  allowHalfRating: false,
+                                  starCount: 5,
+                                  rating: rating,
+                                  size: 50,
+                                  spacing: 2,
+                                  defaultIconData: Iconsax.star,
+                                  filledIconData: Iconsax.star1,
+                                  borderColor: Colors.orange,
+                                  color: Colors.orange,
+                                  onRatingChanged: (value) {
+                                    setState(() {
+                                      rating = value;
+                                    });
+                                  },
+                                ),
+                              ),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  primary: Colors.green[700],
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(100),
+                                    ),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  rateRide(
+                                    context,
+                                    value.getRide['_id'].toString(),
+                                    value.getRide['driver'],
+                                  );
+                                  setState(() {
+                                    _settingRating = false;
+                                    rating = 0;
+                                  });
+                                },
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: 10,
+                                    horizontal: 40,
+                                  ),
+                                  child: Text('Submit'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    )
+                  : Container(),
             ],
           ),
         ),
@@ -629,6 +789,12 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<bool> onWillPop() {
+    if (_isSearching) {
+      setState(() {
+        _isSearching = false;
+      });
+      return Future.delayed(const Duration(seconds: 1), () => false);
+    }
     DateTime now = DateTime.now();
     if (currentBackPressTime == null ||
         now.difference(currentBackPressTime!) > const Duration(seconds: 2)) {

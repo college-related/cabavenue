@@ -113,4 +113,88 @@ class RideService {
       showSnackBar(context, e.toString(), true);
     }
   }
+
+  void rateRide(
+    BuildContext context,
+    String id,
+    double rating,
+  ) async {
+    String token = await _tokenService.getToken();
+
+    try {
+      var request = {
+        "rating": rating,
+      };
+
+      await http.patch(
+        Uri.parse('http://$url/v1/rides/$id'),
+        body: jsonEncode(request),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $token',
+        },
+      ).then((value) {
+        if (value.statusCode != 200) {
+          httpErrorHandle(response: value, context: context, onSuccess: () {});
+        }
+      });
+    } catch (e) {
+      // ignore: use_build_context_synchronously
+      showSnackBar(context, e.toString(), true);
+    }
+  }
+
+  dynamic currentRide(
+    BuildContext context,
+  ) async {
+    String token = await _tokenService.getToken();
+    String userId = await _tokenService.getUserId();
+
+    try {
+      var currentRide = await http.get(
+        Uri.parse('http://$url/v1/rides/current/$userId'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $token',
+        },
+      ).then((value) {
+        if (value.statusCode == 200) {
+          return jsonDecode(value.body);
+        } else {
+          httpErrorHandle(response: value, context: context, onSuccess: () {});
+          return {
+            'rideId': '',
+            'driverId': '',
+            'driverName': '',
+            'model': '',
+            'plateNumber': '',
+            'color': '',
+            'destination': {
+              'latitude': '',
+              'longitude': '',
+              'name': '',
+            },
+          };
+        }
+      });
+
+      return currentRide;
+    } catch (e) {
+      // ignore: use_build_context_synchronously
+      showSnackBar(context, e.toString(), true);
+      return {
+        'rideId': '',
+        'driverId': '',
+        'driverName': '',
+        'model': '',
+        'plateNumber': '',
+        'color': '',
+        'destination': {
+          'latitude': '',
+          'longitude': '',
+          'name': '',
+        },
+      };
+    }
+  }
 }
