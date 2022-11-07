@@ -57,6 +57,7 @@ class _HomePageState extends State<HomePage> {
   List drivers = [];
   String price = '';
   double rating = 0;
+  List<Polyline> _polylines = [];
 
   void getCurrentLocation() async {
     Location location = Location();
@@ -318,6 +319,9 @@ class _HomePageState extends State<HomePage> {
                         tileProviders: TileProviders({
                           'openmaptiles': _cachingTileProvider(_urlTemplate()),
                         })),
+                    PolylineLayerOptions(
+                      polylines: _polylines,
+                    ),
                     MarkerLayerOptions(
                       markers: [
                         Marker(
@@ -373,15 +377,6 @@ class _HomePageState extends State<HomePage> {
                                 builder: (ctx) => Icon(
                                   Iconsax.gps5,
                                   size: 0,
-                                  color: Colors.black,
-                                  shadows: [
-                                    BoxShadow(
-                                      color: Colors.grey.withOpacity(0.2),
-                                      spreadRadius: 8,
-                                      blurRadius: 10,
-                                      offset: const Offset(2, 5),
-                                    ),
-                                  ],
                                 ),
                               ),
                       ],
