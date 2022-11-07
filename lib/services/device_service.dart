@@ -45,7 +45,7 @@ class DeviceService {
           'Content-Type': 'application/json; charset=UTF-8',
         },
       ).then((value) {
-        if (value.statusCode == 200) {
+        if (value.statusCode == 201) {
           return jsonDecode(value.body);
         } else {
           return null;
