@@ -61,14 +61,11 @@ class DeviceService {
   dynamic updateDevice(
     BuildContext context,
     String id,
-    String firebaseToken,
+    String userId,
+    String access,
   ) async {
     try {
-      String? token = await _tokenService.getToken();
-      String? userId = await _tokenService.getUserId();
-
       var device = {
-        'firebaseToken': firebaseToken,
         'user': userId,
       };
 
@@ -77,7 +74,7 @@ class DeviceService {
         body: jsonEncode(device),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
-          'Authorization': 'Bearer $token',
+          'Authorization': 'Bearer $access',
         },
       ).then((value) {
         if (value.statusCode == 200) {
@@ -96,6 +93,32 @@ class DeviceService {
       });
 
       return remoteDevice;
+    } catch (e) {
+      showSnackBar(context, e.toString(), true);
+    }
+  }
+
+  void deleteDevice(BuildContext context, String firebasetoken) async {
+    try {
+      String? token = await _tokenService.getToken();
+
+      await http.delete(
+        Uri.parse('http://$url/v1/devices/$firebasetoken'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $token',
+        },
+      ).then((value) {
+        if (value.statusCode == 401 &&
+            jsonDecode(value.body)['message'] == 'Please authenticate') {
+          Navigator.of(context)
+              .pushNamedAndRemoveUntil('/auth', (route) => false);
+          showSnackBar(context, 'Session finished, please login again', true);
+        }
+        if (value.statusCode != 204) {
+          httpErrorHandle(response: value, context: context, onSuccess: () {});
+        }
+      });
     } catch (e) {
       showSnackBar(context, e.toString(), true);
     }

@@ -123,7 +123,7 @@ class _MyRidePageState extends State<MyRidePage> {
                               .fromNow(form: UnitStringForm.short),
                         ),
                         Text(
-                          "Rs. ${history[index]['price']}",
+                          "Rs. ${num.parse(history[index]['price'].toString()).toStringAsFixed(2)}",
                           style: Theme.of(context).textTheme.headline2,
                         ),
                         Row(

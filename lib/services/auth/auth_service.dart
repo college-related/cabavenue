@@ -67,9 +67,14 @@ class AuthService {
             msg: 'Registered successfully',
             backgroundColor: Colors.green[300],
           );
+          Provider.of<DeviceProvider>(context, listen: false).update(
+            context,
+            user.id,
+            user.accessToken,
+          );
           Provider.of<ProfileProvider>(context, listen: false)
               .setUserData(user);
-          Provider.of<DeviceProvider>(context, listen: false).update(context);
+
           Navigator.of(context)
               .pushNamedAndRemoveUntil('/home', (route) => false);
         },
@@ -124,9 +129,13 @@ class AuthService {
             msg: 'Logged in successfully',
             backgroundColor: Colors.green[300],
           );
+          Provider.of<DeviceProvider>(context, listen: false).update(
+            context,
+            user.id,
+            user.accessToken,
+          );
           Provider.of<ProfileProvider>(context, listen: false)
               .setUserData(user);
-          Provider.of<DeviceProvider>(context, listen: false).update(context);
 
           Navigator.of(context)
               .pushNamedAndRemoveUntil('/home', (route) => false);
@@ -138,6 +147,7 @@ class AuthService {
   }
 
   void logout(context) async {
+    Provider.of<DeviceProvider>(context, listen: false).deleteDevice(context);
     const FlutterSecureStorage().delete(key: "CABAVENUE_USERDATA_PASSENGER");
     Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
     Fluttertoast.showToast(
