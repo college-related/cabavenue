@@ -6,6 +6,7 @@ import 'package:cabavenue/providers/destination_provider.dart';
 import 'package:cabavenue/providers/profile_provider.dart';
 import 'package:cabavenue/providers/ride_provider.dart';
 import 'package:cabavenue/services/notifaction_service.dart';
+import 'package:cabavenue/services/places_api_service.dart';
 import 'package:cabavenue/services/ride_service.dart';
 import 'package:cabavenue/utils/icon_list.dart';
 import 'package:cabavenue/widgets/accepted_container.dart';
@@ -57,7 +58,30 @@ class _HomePageState extends State<HomePage> {
   List drivers = [];
   String price = '';
   double rating = 0;
-  List<Polyline> _polylines = [];
+  List<Polyline> polylines = [];
+
+  getRoutePolylinePoints(startLat, startLng, desLat, desLng) async {
+    var points = await PlacesApiService().getRoutingPolyPoint(
+      context,
+      startLat,
+      startLng,
+      desLat,
+      desLng,
+    );
+    polylines.add(Polyline(
+      points: points,
+      color: Colors.purpleAccent,
+      strokeWidth: 5,
+    ));
+    _mapController.move(
+      LatLng(
+        currentLocation?.latitude ?? 28.2624061,
+        currentLocation?.longitude ?? 83.9687894,
+      ),
+      16,
+    );
+    setState(() {});
+  }
 
   void getCurrentLocation() async {
     Location location = Location();
@@ -68,10 +92,11 @@ class _HomePageState extends State<HomePage> {
       },
     );
     location.onLocationChanged.listen((newLoc) {
-      currentLocation = newLoc;
-      _mapController.move(LatLng(newLoc.latitude!, newLoc.longitude!), 18);
+      setState(() {
+        currentLocation = newLoc;
+        _mapController.move(LatLng(newLoc.latitude!, newLoc.longitude!), 18);
+      });
     });
-    setState(() {});
   }
 
   void getProfileData() async {
@@ -110,7 +135,7 @@ class _HomePageState extends State<HomePage> {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       handleNotification(message);
     });
-    // getCurrentLocation();
+    getCurrentLocation();
   }
 
   checkInRide() async {
@@ -160,6 +185,7 @@ class _HomePageState extends State<HomePage> {
         _isDestinationSet = false;
         _settingRating = true;
         rating = 0;
+        polylines.clear();
       }
       _isRequesting = false;
     });
@@ -235,6 +261,15 @@ class _HomePageState extends State<HomePage> {
       drivers.addAll(driverList['drivers']);
       price = driverList['price'].toString();
     });
+
+    getRoutePolylinePoints(
+      currentLocation!.latitude,
+      currentLocation!.longitude,
+      Provider.of<DestinationProvider>(context, listen: false)
+          .getDestination['latitude'],
+      Provider.of<DestinationProvider>(context, listen: false)
+          .getDestination['longitude'],
+    );
   }
 
   requestCab(BuildContext context, String id, dynamic driver) async {
@@ -306,6 +341,9 @@ class _HomePageState extends State<HomePage> {
                 child: FlutterMap(
                   mapController: _mapController,
                   options: MapOptions(
+                    // onPositionChanged: ((position, hasGesture) {
+
+                    // }),
                     zoom: 18,
                     center: LatLng(
                       currentLocation?.latitude ?? 28.2624061,
@@ -320,7 +358,7 @@ class _HomePageState extends State<HomePage> {
                           'openmaptiles': _cachingTileProvider(_urlTemplate()),
                         })),
                     PolylineLayerOptions(
-                      polylines: _polylines,
+                      polylines: polylines,
                     ),
                     MarkerLayerOptions(
                       markers: [
@@ -616,6 +654,9 @@ class _HomePageState extends State<HomePage> {
                                       ride['_id'].toString(),
                                       ride['driver'],
                                     );
+                                    setState(() {
+                                      polylines.clear();
+                                    });
                                     setRestFormBools(false, 'requesting');
                                   },
                                 ),
@@ -628,10 +669,14 @@ class _HomePageState extends State<HomePage> {
                                           setRestFormBools(true, 'requesting'),
                                       callback2: () {
                                         setRestFormBools(false, 'destination');
+                                        setRestFormBools(false, 'searching');
                                         Provider.of<DestinationProvider>(
                                                 context,
                                                 listen: false)
                                             .setDestination(null);
+                                        setState(() {
+                                          polylines.clear();
+                                        });
                                       },
                                       request: requestCab,
                                       drivers: drivers,
