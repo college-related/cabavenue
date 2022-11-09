@@ -26,7 +26,7 @@ class RideService {
         'destination': destination,
       };
 
-      var places = await http.post(
+      var rides = await http.post(
         Uri.parse('http://$url/v1/rides/$lat/$lng'),
         body: jsonEncode(ride),
         headers: <String, String>{
@@ -38,15 +38,15 @@ class RideService {
           return jsonDecode(value.body);
         } else {
           httpErrorHandle(response: value, context: context, onSuccess: () {});
-          return [];
+          return null;
         }
       });
 
-      return places;
+      return rides;
     } catch (e) {
       // ignore: use_build_context_synchronously
       showSnackBar(context, e.toString(), true);
-      return [];
+      return null;
     }
   }
 
@@ -104,7 +104,7 @@ class RideService {
           'Authorization': 'Bearer $token',
         },
       ).then((value) {
-        if (value.statusCode == 500) {
+        if (value.statusCode != 204) {
           httpErrorHandle(response: value, context: context, onSuccess: () {});
         }
       });

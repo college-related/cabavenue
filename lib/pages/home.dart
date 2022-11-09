@@ -1,4 +1,5 @@
 // ignore_for_file: prefer_const_constructors, depend_on_referenced_packages, use_build_context_synchronously
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:cabavenue/models/user_model.dart';
@@ -54,7 +55,9 @@ class _HomePageState extends State<HomePage> {
   final RideService _rideService = RideService();
   final NotificationService _notificationService = NotificationService();
   dynamic sourceLocation;
-  // dynamic destinationLocation;
+  Location location = Location();
+  late StreamSubscription<LocationData> locationSubscription;
+
   List drivers = [];
   String price = '';
   double rating = 0;
@@ -84,14 +87,12 @@ class _HomePageState extends State<HomePage> {
   }
 
   void getCurrentLocation() async {
-    Location location = Location();
-
     location.getLocation().then(
       (location) {
         currentLocation = location;
       },
     );
-    location.onLocationChanged.listen((newLoc) {
+    locationSubscription = location.onLocationChanged.listen((newLoc) {
       setState(() {
         currentLocation = newLoc;
         _mapController.move(LatLng(newLoc.latitude!, newLoc.longitude!), 18);
@@ -193,8 +194,9 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
-    myFocusNode.dispose();
     super.dispose();
+    myFocusNode.dispose();
+    locationSubscription.cancel();
   }
 
   VectorTileProvider _cachingTileProvider(String urlTemplate) {
@@ -256,20 +258,28 @@ class _HomePageState extends State<HomePage> {
       Provider.of<DestinationProvider>(context, listen: false).getDestination,
     );
 
-    setState(() {
-      drivers.clear();
-      drivers.addAll(driverList['drivers']);
-      price = driverList['price'].toString();
-    });
+    if (driverList != null) {
+      setState(() {
+        _isDestinationSet = true;
+        drivers.clear();
+        drivers.addAll(driverList['drivers']);
+        price = driverList['price'].toString();
+      });
 
-    getRoutePolylinePoints(
-      currentLocation!.latitude,
-      currentLocation!.longitude,
-      Provider.of<DestinationProvider>(context, listen: false)
-          .getDestination['latitude'],
-      Provider.of<DestinationProvider>(context, listen: false)
-          .getDestination['longitude'],
-    );
+      getRoutePolylinePoints(
+        currentLocation!.latitude,
+        currentLocation!.longitude,
+        Provider.of<DestinationProvider>(context, listen: false)
+            .getDestination['latitude'],
+        Provider.of<DestinationProvider>(context, listen: false)
+            .getDestination['longitude'],
+      );
+    } else {
+      setState(() {
+        _isSearching = false;
+        _isDestinationSet = false;
+      });
+    }
   }
 
   requestCab(BuildContext context, String id, dynamic driver) async {
@@ -695,7 +705,6 @@ class _HomePageState extends State<HomePage> {
                                     },
                                     callback2: () async {
                                       await searchRides();
-                                      setRestFormBools(true, 'destination');
                                     },
                                     destinationNode: myFocusNode,
                                     destinationLocation: value.getDestination,

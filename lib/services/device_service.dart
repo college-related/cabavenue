@@ -22,6 +22,7 @@ class DeviceService {
         if (value.statusCode == 200) {
           return value.body;
         } else {
+          httpErrorHandle(response: value, context: context, onSuccess: () {});
           return null;
         }
       });
@@ -48,6 +49,7 @@ class DeviceService {
         if (value.statusCode == 201) {
           return jsonDecode(value.body);
         } else {
+          httpErrorHandle(response: value, context: context, onSuccess: () {});
           return null;
         }
       });
@@ -79,13 +81,6 @@ class DeviceService {
       ).then((value) {
         if (value.statusCode == 200) {
           return value.body;
-        }
-        if (value.statusCode == 401 &&
-            jsonDecode(value.body)['message'] == 'Please authenticate') {
-          Navigator.of(context)
-              .pushNamedAndRemoveUntil('/auth', (route) => false);
-          showSnackBar(context, 'Session finished, please login again', true);
-          return null;
         } else {
           httpErrorHandle(response: value, context: context, onSuccess: () {});
           return null;
@@ -109,12 +104,6 @@ class DeviceService {
           'Authorization': 'Bearer $token',
         },
       ).then((value) {
-        if (value.statusCode == 401 &&
-            jsonDecode(value.body)['message'] == 'Please authenticate') {
-          Navigator.of(context)
-              .pushNamedAndRemoveUntil('/auth', (route) => false);
-          showSnackBar(context, 'Session finished, please login again', true);
-        }
         if (value.statusCode != 204) {
           httpErrorHandle(response: value, context: context, onSuccess: () {});
         }

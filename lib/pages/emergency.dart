@@ -32,8 +32,11 @@ class _EmergencyPageState extends State<EmergencyPage> {
     var cabs = await EmergencyService().getEmergencyCabs(context);
     List<EmergencyModel> drivers = [];
 
-    for (var cab in cabs) {
-      drivers.add(await EmergencyModel.deserialize(jsonEncode(cab).toString()));
+    if (cabs != null) {
+      for (var cab in cabs) {
+        drivers
+            .add(await EmergencyModel.deserialize(jsonEncode(cab).toString()));
+      }
     }
     return drivers;
   }

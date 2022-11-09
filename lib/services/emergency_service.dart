@@ -15,7 +15,7 @@ class EmergencyService {
     String token = await _tokenService.getToken();
 
     try {
-      var places = await http.get(
+      var emergencyCabs = await http.get(
         Uri.parse('http://$url/v1/users/emergencyCabs/all'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
@@ -26,15 +26,15 @@ class EmergencyService {
           return jsonDecode(value.body);
         } else {
           httpErrorHandle(response: value, context: context, onSuccess: () {});
-          return [];
+          return null;
         }
       });
 
-      return places;
+      return emergencyCabs;
     } catch (e) {
       // ignore: use_build_context_synchronously
       showSnackBar(context, e.toString(), true);
-      return [];
+      return null;
     }
   }
 }

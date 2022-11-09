@@ -30,14 +30,6 @@ class FavoriteService {
       ).then((value) {
         if (value.statusCode == 200) {
           return jsonDecode(value.body);
-        } else if (value.statusCode == 401 &&
-            jsonDecode(value.body)['message'] == 'Please authenticate') {
-          Navigator.of(context)
-              .pushNamedAndRemoveUntil('/auth', (route) => false);
-          Fluttertoast.showToast(
-            msg: 'Session finished. Please login again',
-            backgroundColor: Colors.red[400],
-          );
         } else {
           httpErrorHandle(response: value, context: context, onSuccess: () {});
           return [];
@@ -70,14 +62,6 @@ class FavoriteService {
       ).then((value) {
         if (value.statusCode == 200) {
           return value;
-        } else if (value.statusCode == 401 &&
-            jsonDecode(value.body)['message'] == 'Please authenticate') {
-          Navigator.of(context)
-              .pushNamedAndRemoveUntil('/auth', (route) => false);
-          Fluttertoast.showToast(
-            msg: 'Session finished. Please login again',
-            backgroundColor: Colors.red[400],
-          );
         } else {
           httpErrorHandle(response: value, context: context, onSuccess: () {});
         }
@@ -149,14 +133,6 @@ class FavoriteService {
       ).then((value) {
         if (value.statusCode == 200) {
           return value;
-        } else if (value.statusCode == 401 &&
-            jsonDecode(value.body)['message'] == 'Please authenticate') {
-          Navigator.of(context)
-              .pushNamedAndRemoveUntil('/auth', (route) => false);
-          Fluttertoast.showToast(
-            msg: 'Session finished. Please login again',
-            backgroundColor: Colors.red[400],
-          );
         } else {
           httpErrorHandle(response: value, context: context, onSuccess: () {});
         }
@@ -230,14 +206,6 @@ class FavoriteService {
       ).then((value) {
         if (value.statusCode == 200) {
           return value;
-        } else if (value.statusCode == 401 &&
-            jsonDecode(value.body)['message'] == 'Please authenticate') {
-          Navigator.of(context)
-              .pushNamedAndRemoveUntil('/auth', (route) => false);
-          Fluttertoast.showToast(
-            msg: 'Session finished. Please login again',
-            backgroundColor: Colors.red[400],
-          );
         } else {
           httpErrorHandle(response: value, context: context, onSuccess: () {});
         }
