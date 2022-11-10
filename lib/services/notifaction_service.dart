@@ -29,7 +29,7 @@ class NotificationService {
       };
 
       await http.post(
-        Uri.parse('http://$url/v1/devices/notify/$id'),
+        Uri.parse('$url/v1/devices/notify/$id'),
         body: jsonEncode(request),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',

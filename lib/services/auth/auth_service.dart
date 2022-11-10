@@ -34,7 +34,7 @@ class AuthService {
       };
 
       http.Response res = await http.post(
-        Uri.parse('http://$url/v1/auth/register'),
+        Uri.parse('$url/v1/auth/register'),
         body: jsonEncode(toSendUser),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
@@ -96,7 +96,7 @@ class AuthService {
       };
 
       http.Response res = await http.post(
-        Uri.parse('http://$url/v1/auth/login'),
+        Uri.parse('$url/v1/auth/login'),
         body: jsonEncode(user),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',

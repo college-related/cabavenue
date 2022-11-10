@@ -37,7 +37,7 @@ class UserService {
       };
 
       var profile = await http.patch(
-        Uri.parse('http://$url/v1/users/$id'),
+        Uri.parse('$url/v1/users/$id'),
         body: jsonEncode(user),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',

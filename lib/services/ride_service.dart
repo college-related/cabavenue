@@ -27,7 +27,7 @@ class RideService {
       };
 
       var rides = await http.post(
-        Uri.parse('http://$url/v1/rides/$lat/$lng'),
+        Uri.parse('$url/v1/rides/$lat/$lng'),
         body: jsonEncode(ride),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
@@ -70,7 +70,7 @@ class RideService {
       };
 
       var places = await http.post(
-        Uri.parse('http://$url/v1/rides'),
+        Uri.parse('$url/v1/rides'),
         body: jsonEncode(request),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
@@ -98,7 +98,7 @@ class RideService {
 
     try {
       await http.delete(
-        Uri.parse('http://$url/v1/rides/$id'),
+        Uri.parse('$url/v1/rides/$id'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': 'Bearer $token',
@@ -127,7 +127,7 @@ class RideService {
       };
 
       await http.patch(
-        Uri.parse('http://$url/v1/rides/$id'),
+        Uri.parse('$url/v1/rides/$id'),
         body: jsonEncode(request),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
@@ -152,7 +152,7 @@ class RideService {
 
     try {
       var currentRide = await http.get(
-        Uri.parse('http://$url/v1/rides/current/$userId'),
+        Uri.parse('$url/v1/rides/current/$userId'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': 'Bearer $token',

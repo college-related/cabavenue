@@ -22,7 +22,7 @@ class FavoriteService {
 
     try {
       var favoritePlaces = await http.get(
-        Uri.parse('http://$url/v1/users/favorite/$id'),
+        Uri.parse('$url/v1/users/favorite/$id'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': 'Bearer $token',
@@ -53,7 +53,7 @@ class FavoriteService {
 
     try {
       var favoritePlaces = await http.delete(
-        Uri.parse('http://$url/v1/users/favorite/$userId'),
+        Uri.parse('$url/v1/users/favorite/$userId'),
         body: jsonEncode({"index": index}),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
@@ -124,7 +124,7 @@ class FavoriteService {
       };
 
       var favoritePlaces = await http.patch(
-        Uri.parse('http://$url/v1/users/favorite/$userId'),
+        Uri.parse('$url/v1/users/favorite/$userId'),
         body: jsonEncode(place),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
@@ -197,7 +197,7 @@ class FavoriteService {
       };
 
       var favoritePlaces = await http.patch(
-        Uri.parse('http://$url/v1/users/favorite/$userId'),
+        Uri.parse('$url/v1/users/favorite/$userId'),
         body: jsonEncode(place),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',

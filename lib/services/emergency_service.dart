@@ -16,7 +16,7 @@ class EmergencyService {
 
     try {
       var emergencyCabs = await http.get(
-        Uri.parse('http://$url/v1/users/emergencyCabs/all'),
+        Uri.parse('$url/v1/users/emergencyCabs/all'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': 'Bearer $token',

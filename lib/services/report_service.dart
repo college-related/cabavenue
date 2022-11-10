@@ -28,7 +28,7 @@ class ReportService {
       String token = await _tokenService.getToken();
 
       await http.post(
-        Uri.parse('http://$url/v1/reports'),
+        Uri.parse('$url/v1/reports'),
         body: jsonEncode(report),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',

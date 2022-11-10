@@ -14,7 +14,7 @@ class DeviceService {
   dynamic fetchByFirebaseToken(BuildContext context, firebaseToken) async {
     try {
       var device = await http.get(
-        Uri.parse('http://$url/v1/devices/byFirebaseToken/$firebaseToken'),
+        Uri.parse('$url/v1/devices/byFirebaseToken/$firebaseToken'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
@@ -39,7 +39,7 @@ class DeviceService {
       };
 
       var remoteDevice = await http.post(
-        Uri.parse('http://$url/v1/devices'),
+        Uri.parse('$url/v1/devices'),
         body: jsonEncode(device),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
@@ -70,7 +70,7 @@ class DeviceService {
       };
 
       var remoteDevice = await http.patch(
-        Uri.parse('http://$url/v1/devices/$id'),
+        Uri.parse('$url/v1/devices/$id'),
         body: jsonEncode(device),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
@@ -96,7 +96,7 @@ class DeviceService {
       String? token = await _tokenService.getToken();
 
       await http.delete(
-        Uri.parse('http://$url/v1/devices/$firebasetoken'),
+        Uri.parse('$url/v1/devices/$firebasetoken'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
           'Authorization': 'Bearer $token',
