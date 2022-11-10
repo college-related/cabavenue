@@ -22,7 +22,6 @@ class DeviceService {
         if (value.statusCode == 200) {
           return value.body;
         } else {
-          httpErrorHandle(response: value, context: context, onSuccess: () {});
           return null;
         }
       });
@@ -49,7 +48,6 @@ class DeviceService {
         if (value.statusCode == 201) {
           return jsonDecode(value.body);
         } else {
-          httpErrorHandle(response: value, context: context, onSuccess: () {});
           return null;
         }
       });
